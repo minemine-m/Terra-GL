@@ -1,0 +1,59 @@
+{
+	"name": "terra.gl",
+	"version": "0.0.1-alpha.2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.umd.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.umd.cjs",
+			"types": "./dist/index.d.ts"
+		},
+		"./plugin": {
+			"import": "./dist/plugin/index.js",
+			"require": "./dist/plugin/index.js",
+			"types": "./dist/plugin/index.d.ts"
+		}
+	},
+	"license": "MIT",
+	"author": {
+		"name": "criska"
+	},
+	"description": "一个基于three.js的地图框架",
+	"scripts": {
+		"dev": "npm run dev --workspace=packages/demo",
+		"build": "npm run build:core && node copy-dist.cjs",
+		"build:core": "npm run build --workspace=packages/core",
+		"build:demo": "npm run build --workspace=packages/demo",
+		"build:extend": "npm run build --workspace=packages/extend",
+		"format": "prettier --write \"**/*.{ts,js,json,md}\""
+	},
+	"devDependencies": {
+		"@types/node": "^20.17.30",
+		"@types/offscreencanvas": "^2019.7.0",
+		"@types/three": "^0.165.0",
+		"fs-extra": "^11.3.0",
+		"prettier": "^3.5.3",
+		"typedoc": "^0.25.13",
+		"typescript": "^5.3.3",
+		"vite": "^5.4.16",
+		"vite-plugin-dts": "^4.0.3"
+	},
+	"peerDependencies": {
+		"three": "^0.165.0"
+	},
+	"workspaces": [
+		"packages/*"
+	],
+	"keywords": [
+		"three",
+		"gis",
+		"map",
+		"3D"
+	]
+}

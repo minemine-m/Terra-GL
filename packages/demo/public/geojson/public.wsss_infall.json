@@ -1,0 +1,61 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "public.wsss_infall",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5643995, 34.8060638 ]
+			},
+			"properties" : {
+				"smid" : 3,
+				"smuserid" : 0,
+				"fcode" : "52022104",
+				"eid" : "WS-JK-000001",
+				"expno" : "01WS08731",
+				"fname" : null,
+				"category" : null,
+				"subtype" : "进水口",
+				"d_s" : null,
+				"specification" : null,
+				"material" : null,
+				"p_pollution" : null,
+				"sur_h" : 108.844,
+				"cen_deep" : null,
+				"work_stats" : "在用",
+				"cov_date" : null,
+				"finish_date" : null,
+				"survey_date" : "20181020000000+08:00",
+				"survey_person" : null,
+				"managedept" : null,
+				"bunit" : "管委会城管局",
+				"sunit" : "工程勘察院",
+				"constructer" : null,
+				"prjid" : null,
+				"prjname" : null,
+				"prjtype" : null,
+				"prjunit" : null,
+				"prjperson" : null,
+				"lane_way" : "玉兰街",
+				"addr" : null,
+				"sy_angle" : 175.03,
+				"archive_id" : null,
+				"datatype" : null,
+				"add_person" : "system",
+				"add_date" : "20241029181916+08:00",
+				"write_person" : "system",
+				"write_date" : "20241029181916+08:00",
+				"check_person" : null,
+				"remark" : null,
+				"x" : 12641931.122,
+				"y" : 4137557.116,
+				"gname" : "中原区",
+				"grid" : "0110",
+				"district" : "高新区",
+				"impid" : null,
+				"globalid" : "{6874D04D-8C32-47FA-BA5F-6469A9FC9214}"
+			}
+		}
+	]
+}

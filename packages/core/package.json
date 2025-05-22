@@ -1,0 +1,48 @@
+{
+	"name": "@terra.gl/core",
+	"version": "0.0.1-alpha.2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.umd.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.umd.cjs",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"author": {
+		"name": "criska"
+	},
+	"description": "a map using threejs",
+	"license": "MIT",
+	"keywords": [
+		"three",
+		"gis",
+		"tile",
+		"map",
+		"3D",
+		"cesium",
+		"mapbox"
+	],
+	"scripts": {
+		"dev": "vite build --watch",
+		"build": "tsc && vite build"
+	},
+	"peerDependencies": {
+		"three": "^0.165.0"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/",
+		"access": "public"
+	},
+	"dependencies": {
+		"@types/earcut": "^3.0.0",
+		"@types/geojson": "^7946.0.16",
+		"earcut": "^3.0.1"
+	}
+}
