@@ -22,7 +22,8 @@ export class Maker extends Point {
         if (this._style) {
             // 创建新几何体前先清除旧引用
             if (this._threeGeometry) {
-                this.remove(this._threeGeometry);
+                // this.remove(this._threeGeometry);
+                this._disposeGeometry(); // 清除旧的几何体
             }
 
             this._threeGeometry = await this._createObject(this._style);

@@ -22,15 +22,18 @@ export class MultiLineString extends Line {
     constructor(options: MultiLineStringOptions) {
         super(options);
         this._linesContainer = new Group();
-        this._threeGeometry = this._linesContainer; // 将容器作为主几何体
+   
     }
 
     async _toThreeJSGeometry(): Promise<void> {
         const { _position } = this._coordsTransform(); // 进行坐标转换
         
-        console.log('MultiLineString _position:', _position);
+        // console.log('MultiLineString _position:', _position);
+        
         // 清除现有的线对象
         this.clearLines();
+        this._disposeGeometry(); // 清除旧的几何体
+        // this._disposeGeometry();
         
         if (this._style) {
             // 为每条线创建单独的几何体
@@ -38,8 +41,9 @@ export class MultiLineString extends Line {
                 const vertexPoints = linePositions.flatMap(v => [v.x, v.y, v.z]);
                 console.log('多线的vertexPoints:', vertexPoints);
                 const lineObject = await this._createLineObject(this._style, vertexPoints);
-                // this._lineObjects.push(lineObject);
+                this._lineObjects.push(lineObject);
                 this._linesContainer.add(lineObject);
+                this._threeGeometry = this._linesContainer; // 将容器作为主几何体
             }
             
             this.add(this._threeGeometry);

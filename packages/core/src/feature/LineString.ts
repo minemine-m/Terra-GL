@@ -25,7 +25,8 @@ export class LineString extends Line {
         if (this._style) {
             // 创建新几何体前先清除旧引用
             if (this._threeGeometry) {
-                this.remove(this._threeGeometry);
+                // this.remove(this._threeGeometry);
+                this._disposeGeometry(); // 清除旧的几何体
             }
 
             this._threeGeometry = await this._createObject(this._style);
@@ -48,7 +49,7 @@ export class LineString extends Line {
         }
     }
     _updateGeometry() {
-        this.clear();
+        this._disposeGeometry(); // 清除旧的几何体
         if (this._threeGeometry) {
             const line2 = this._threeGeometry as Line2; // 强制类型断言
             const geometry = line2.geometry; // 获取底层 BufferGeometry

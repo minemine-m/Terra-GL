@@ -73,7 +73,8 @@ export class Model extends Point {
         console.log(this._position, 'this._position')
         if (this._style) {
             if (this._threeGeometry) {
-                this.remove(this._threeGeometry);
+                // this.remove(this._threeGeometry);
+                this._disposeGeometry(); // 清除旧的几何体
             }
 
             this.modelunino = await this._createObject(this._style);
