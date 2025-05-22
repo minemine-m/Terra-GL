@@ -17,6 +17,9 @@ import {
 	SRGBColorSpace
 } from "three";
 import Stats from 'three/addons/libs/stats.module.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 import { Easing, Tween, update as teweenUpdate } from "three/examples/jsm/libs/tween.module.js";
 
@@ -63,6 +66,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	public container?: HTMLElement;
 	private readonly _clock: Clock = new Clock();
 	private stats: Stats;
+	private composer: EffectComposer;
 
 	private _fogFactor = 1.0;
 
@@ -113,6 +117,68 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 
 		this.stats = new Stats();
 		document.body.appendChild(this.stats.dom);
+
+
+		// ssao 先写这里
+		// 1. 初始化后处理器
+		this.composer = new EffectComposer(this.renderer);
+
+
+
+		// ✅ 创建 SSAOPass 时显式设置分辨率（匹配屏幕尺寸）
+		// 1. 创建基础渲染通道
+		const renderPass = new RenderPass(this.scene, this.camera);
+
+		// 2. 初始化 SSAO (使用当前画布尺寸)
+		const ssaoPass = new SSAOPass(
+			this.scene,
+			this.camera,
+			this.width,
+			this.height
+		);
+
+		// 3. 强制更新内部渲染目标分辨率
+		ssaoPass.normalRenderTarget.setSize(this.width, this.height);
+		ssaoPass.ssaoRenderTarget.setSize(this.width, this.height);
+		ssaoPass.blurRenderTarget.setSize(this.width, this.height);
+
+		// 4. 优化参数（地理场景适配）
+		ssaoPass.kernelRadius = 16;                  // 根据场景缩放调整
+		ssaoPass.minDistance = 1;                    // 避免近处噪点
+		ssaoPass.maxDistance = 1000;                 // 覆盖中远距离
+		ssaoPass.generateSampleKernel(24);           // 提升采样质量
+		ssaoPass.generateRandomKernelRotations();
+		ssaoPass.output = SSAOPass.OUTPUT.Default;   // 混合原始场景
+
+		// 5. 设置 EffectComposer
+		this.composer = new EffectComposer(this.renderer);
+		this.composer.setSize(this.width, this.height);
+		this.composer.addPass(renderPass);
+		this.composer.addPass(ssaoPass);
+
+
+		// const ssaoPass = new SSAOPass(
+		// 	this.scene,
+		// 	this.camera,
+		// 	window.innerWidth,
+		// 	window.innerHeight
+		// );
+		// saoPass.params.output = THREE.SAOPass.OUTPUT.Default;
+		// saoPass.params.saoBias = 0.5;
+		// saoPass.params.saoIntensity = 0.05;
+		// saoPass.params.saoScale = 100;
+		// saoPass.params.saoKernelRadius = 10;
+		// saoPass.params.saoMinResolution = 0;
+		// saoPass.params.saoBlur = true;
+		// composer = new EffectComposer(renderer);
+		// composer.addPass(renderPass);
+		// composer.addPass(saoPass);
+
+
+		// 		ssaoPass.intensity = 0.5;  // 原值可能为1.5~2.0（图2参数）
+		// ssaoPass.bias = 0.01;      // 减小遮蔽偏移
+
+		// this.composer.addPass(ssaoPass);
 	}
 
 	/**
@@ -304,7 +370,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 * @returns AmbientLight
 	 */
 	private _createAmbLight() {
-		const ambLight = new AmbientLight(0xffffff, 0);
+		const ambLight = new AmbientLight(0xffffff, 1);
 		return ambLight;
 	}
 
@@ -313,7 +379,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 * @returns DirectionalLight
 	 */
 	private _createDirLight() {
-		const dirLight = new DirectionalLight(0xffffff, 0);
+		const dirLight = new DirectionalLight(0xffffff, 1);
 		dirLight.position.set(0, 2e3, 1e3);
 		dirLight.castShadow = true;
 		// 配置阴影相机
@@ -351,6 +417,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		this.renderer.render(this.scene, this.camera);
 		teweenUpdate();
 		this.stats.update();
+		// this.composer.render();
 		this.dispatchEvent({ type: "update", delta: this._clock.getDelta() });
 	}
 

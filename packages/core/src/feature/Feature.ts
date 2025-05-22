@@ -104,10 +104,10 @@ export abstract class Feature extends EventMixin(
         this._styleQueue.push(configCopy);
 
         // 4. 打印调试信息（生产环境可移除）
-        console.debug(`[Feature] 样式入队，当前队列长度: ${this._styleQueue.length}`, {
-            type: configCopy.type,
-            queueDepth: this._styleQueue.length
-        });
+        // console.debug(`[Feature] 样式入队，当前队列长度: ${this._styleQueue.length}`, {
+        //     type: configCopy.type,
+        //     queueDepth: this._styleQueue.length
+        // });
 
         // 5. 立即尝试处理
         this._tryProcessQueue();
@@ -218,7 +218,7 @@ export abstract class Feature extends EventMixin(
             // 启动处理（包含错误隔离）
             this._processStyleQueue()
                 .then(() => {
-                    console.debug('[Feature] 队列处理完成');
+                    // console.debug('[Feature] 队列处理完成');
                 })
                 .catch((error) => {
                     console.error('[Feature] 队列处理失败:', error);
@@ -250,7 +250,7 @@ export abstract class Feature extends EventMixin(
     }
 
     _bindLayer(layer: OverlayLayer): void {
-        console.log('验证一下 ------------------------------', this);
+        // console.log('验证一下 ------------------------------', this);
         if (this._layer && this._layer !== layer) {
             throw new Error('Feature cannot be added to multiple layers');
         }

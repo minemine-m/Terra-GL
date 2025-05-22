@@ -73,6 +73,7 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
         material.transparent = true;
         material.color.setStyle(materialColor);
 
+
         material.onBeforeCompile = (shader: any) => {
             shader.uniforms.time = time;
             shader.uniforms.uStartTime = StartTime;
@@ -201,7 +202,27 @@ if (uFlow.x > 0.5) {
     }
 }
 
-gl_FragColor = vec4(distColor, dstOpacity * uStartTime);
+// gl_FragColor = vec4(distColor, dstOpacity * uStartTime);
+// 修改后的边缘强化代码（加入颜色保护机制）
+// float edge = length(fwidth(vPosition));
+// if(edge > 0.05 && edge < 0.1) { // 限制作用范围
+//     float edgeFactor = smoothstep(0.05, 0.1, edge);
+//     distColor = mix(
+//         distColor, 
+//         distColor * 1.5, // 提亮边缘而非变黑
+//         edgeFactor
+//     );
+// }
+    float edge = max(
+    length(fwidth(vPosition.xy)), 
+    length(fwidth(vPosition.z))
+);
+if(edge > 0.005) {
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.0), smoothstep(0.005, 0.01, edge));
+}
+gl_FragColor = vec4(distColor, uOpacity);
+
+
     `;
 
             shader.fragmentShader = shader.fragmentShader.replace("void main() {", fragment);
@@ -227,7 +248,15 @@ vec3 transformed = vec3(position.x, position.y, position.z * uStartTime);
 
             shader.vertexShader = shader.vertexShader.replace("void main() {", vertex);
             shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", vertexPosition);
+
+            // material.shininess = 10;  // 增加高光锐度
+            // material.specular.set(0xffffff);  // 设置高光颜色
+            // material.flatShading = true;
+
+            
         }
+
+
     });
 
     // Create clock for time tracking

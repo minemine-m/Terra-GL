@@ -70,7 +70,7 @@ export class Model extends Point {
 
     async _toThreeJSGeometry(): Promise<void> {
         this._position = this._coordsTransform() as Vector3;
-        console.log(this._position, 'this._position')
+        // console.log(this._position, 'this._position')
         if (this._style) {
             if (this._threeGeometry) {
                 // this.remove(this._threeGeometry);
@@ -430,16 +430,21 @@ export class Model extends Point {
                 // }
                 // console.log(child.material,'child.materialchild.materialchild.material')
                 renderCity(child, {
-                    materialColor: "#3F90D9",
-                    topColor: "#00E4FF",
-                    flowColor: "#00E4FF",
-                    effectColor: "#9ECDEC",
-                    opacity: 1,
+                    materialColor: "#4179E2",
+                    topColor: "#9BBDFD",
+                    flowColor: "#72D2FF",
+                    effectColor: "#FFFFFF",
+                    opacity: 0.9,
                     diffusionParams: {
                         enabled: true,
-                        range: 150,
+                        range: 50,
                         speed: 500,
                         // center: new Vector3(0, 0, 0)
+                    },
+                    flowParams:{
+                        enabled: false,
+                        range: 150,
+                        speed: 500,
                     },
                     animationSpeed: 0.01
                 });

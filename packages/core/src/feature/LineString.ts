@@ -21,7 +21,7 @@ export class LineString extends Line {
     async _toThreeJSGeometry(): Promise<void> {
         let { _vertexPoints } = this._coordsTransform(); // 进行坐标转换
         this._vertexPoints = _vertexPoints;
-        console.log(this._vertexPoints,'this._vertexPoints')
+        // console.log(this._vertexPoints,'this._vertexPoints')
         if (this._style) {
             // 创建新几何体前先清除旧引用
             if (this._threeGeometry) {
@@ -64,7 +64,7 @@ export class LineString extends Line {
             this.add(this._threeGeometry);
             this.updateMatrixWorld(true);
             this._tryProcessQueue(); // 几何体更新后强制检查队列
-            console.log('LineString geometry updated'); // 调试用，确保更新正确
+            // console.log('LineString geometry updated'); // 调试用，确保更新正确
         }
     }
     // _createObject() {

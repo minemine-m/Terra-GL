@@ -15,8 +15,8 @@ declare global {
 	}
 }
 // 初始化 dat.gui
-const gui = new window.dat.GUI();
-console.log(gui, 'gui-------------------');
+// const gui = new window.dat.GUI();
+// console.log(gui, 'gui-------------------');
 
 
 // 
@@ -56,6 +56,7 @@ function main() {
 			// 	files: ["px.png", "nx.png", "top.jpg", "top.jpg", "pz.png", "nz.png"],
 			// 	defaultColor: 0xffffff
 			// },
+			antialias:true,
 			// 图片顺序对着的夜空1（有山） -------
 			skybox: {
 				path: "./image/skyboxall/SkyBox8/",
@@ -83,29 +84,29 @@ function main() {
 		meshmap: {
 			// 切片数据源
 			imgSource: [
-				// new terra.TDTSource({
-				// 	style: "img_w",
-				// 	token: "baa4de006b9c36080686fb99885177a9",
-				// 	url: `https://t1.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
-				// }),
+				new terra.TDTSource({
+					style: "img_w",
+					token: "baa4de006b9c36080686fb99885177a9",
+					url: `https://t1.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
+				}),
 				// new terra.TDTSource({
 				// 	style: "cia_w",
 				// 	token: "baa4de006b9c36080686fb99885177a9",
 				// 	url: `https://t1.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
 				// }),
-				new terra.MapBoxSource({
-					token: MAPBOXKEY,
-					dataType: "image",
-					style: "mapbox.satellite",
-				}),
+				// new terra.MapBoxSource({
+				// 	token: MAPBOXKEY,
+				// 	dataType: "image",
+				// 	style: "mapbox.satellite",
+				// }),
 				// https://api.mapbox.com/styles/v1/criska/cm2myr6qx001t01pi0sf7estf.html?title=view&access_token=pk.eyJ1IjoiY3Jpc2thIiwiYSI6ImNsOGZjZW5oMzAzMWozbm1sejgxZXBpMnUifQ.6Q2QsN4FXSPxO7XbNDvikw&zoomwheel=true&fresh=true#13.72/30.82036/120.85454/0/64
-				new terra.WMTSSource({
-					urlTemplate: `http://192.168.88.205:8085/geoserver/zzgis/gwc/service/wmts?layer=zzgis%3Ahdgs_pipe_bs&style=&tilematrixset=EPSG%3A3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=EPSG:3857:{z}&TileCol={x}&TileRow={y}&authkey=${authkey}`,
-					isTMS: false // 非TMS
-				})
+				// new terra.WMTSSource({
+				// 	urlTemplate: `http://192.168.88.205:8085/geoserver/zzgis/gwc/service/wmts?layer=zzgis%3Ahdgs_pipe_bs&style=&tilematrixset=EPSG%3A3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=EPSG:3857:{z}&TileCol={x}&TileRow={y}&authkey=${authkey}`,
+				// 	isTMS: false // 非TMS
+				// })
 			],
 			// imgSource:new terra.ArcGisSource(),
-			// 地形数据源
+			// // 地形数据源
 			// demSource: new terra.ArcGisDemSource(),
 
 			minLevel: 1,
@@ -114,7 +115,7 @@ function main() {
 	});
 
 	addline();
-	addModelBuild();
+	// addModelBuild();
 }
 
 
@@ -122,32 +123,29 @@ function main() {
 // 测试大批量管线的性能优化
 function addline() {
 
-	let linelayer = new terra.LineLayer('line');
-	map.addLayer(linelayer);
+	// let linelayer = new terra.LineLayer('line');
+	// map.addLayer(linelayer);
+	// let pipeline = new terra.MultiLineString({
+	// 	"geometry": {
+	// 		"type": "MultiLineString",
+	// 		"coordinates": [
+	// 			[
+	// 				[113.5505121, 34.8025465],
+	// 				[112.5502125, 34.8025465]
+	// 			]
+	// 		]
+	// 	},
+	// 	style: {
+	// 		type: 'basic-line',
+	// 		color: '#0B31A0',
+	// 		width: 100,
+	// 		// dashArray: [10, 10]
+	// 	}
+	// })
+	// console.log(pipeline, 'pipeline-------------------');
+	// pipeline.addTo(linelayer);
 
-
-	let pipeline = new terra.MultiLineString({
-		"geometry": {
-			"type": "MultiLineString",
-			"coordinates": [
-				[
-					[113.5505121, 34.8025465],
-					[112.5502125, 34.8025465]
-				]
-			]
-		},
-		style: {
-			type: 'basic-line',
-			color: '#0B31A0',
-			width: 100,
-			// dashArray: [10, 10]
-		}
-	})
-
-	console.log(pipeline, 'pipeline-------------------');
-	pipeline.addTo(linelayer);
-
-
+	loadgeojsonpipe('/geojson/test2.json', '#12CEE9');
 
 
 }
@@ -167,12 +165,12 @@ function addModelBuild() {
 		},
 		iscity: true,
 		style: {
-			type: 'fbx',
-			url: '/model/shanghai.FBX',
+			type: 'gltf',
+			url: '/model/jzw0305.glb',
 			scale: {
-				x: 1,
-				y: 1,
-				z: 1
+				x: 100,
+				y: 100,
+				z: 100
 			},
 			shadows: {
 				cast: true,
@@ -188,6 +186,79 @@ function addModelBuild() {
 
 }
 
+
+function loadgeojsonpipe(url: any, color: any) {
+	let lineLayer = new terra.LineLayer('pipeline' + Math.random());
+	map.addLayer(lineLayer);
+	fetch(url)
+		.then(res => res.json())
+		.then(data => {
+			data.features.forEach((feature: any) => {
+				if (feature.geometry && feature.geometry.coordinates) {
+
+					// 只处理MultiLineString类型的几何体
+					if (feature.geometry && feature.geometry.type === 'MultiLineString') {
+						const coordinates = feature.geometry.coordinates;
+
+						// 检查是否实际上只有一条线（只有一个坐标数组）
+						if (coordinates.length === 1) {
+							// 转换为LineString
+							feature = {
+								...feature,
+								geometry: {
+									type: 'LineString',
+									coordinates: coordinates[0]
+								}
+							}
+						}
+					}
+
+					feature.geometry.coordinates = feature.geometry.coordinates.map(
+						(coordArray: any) => {
+							if (typeof coordArray[0] === 'number') {
+								return [...coordArray, 1];
+							}
+							return coordArray.map((coord: any) => {
+								if (typeof coord[0] === 'number') {
+									return [...coord, 1];
+								}
+								return coord.map((c: any) => [...c, 1]);
+							});
+						}
+					);
+				}
+				// console.log(feature, 'modified geojson data ------------');
+
+				let pipeline = new terra.LineString({
+					"geometry": feature.geometry,
+					style: {
+						type: 'basic-line',
+						color: color,
+						width: 5,
+						// dashArray: [10, 10]
+					}
+				})
+
+				pipeline.addTo(lineLayer);
+
+			});
+			return data;
+		})
+		.catch(err => {
+			console.error('加载geojson失败:', err);
+		});
+
+		// setTimeout(() => {
+		// 	let allfeatures = lineLayer.getFeatures();
+		// 	console.log(lineLayer.simplerender(), 'allfeatures-------------------');
+		// }, 1000);
+
+
+}
+
+function loadglbline() {
+
+}
 
 main();
 

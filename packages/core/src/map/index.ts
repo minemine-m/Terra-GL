@@ -68,7 +68,11 @@ export class Map extends EventMixin(
         // 地图添加到场景
         this.viewer.scene.add(this.tilemap);
 
+        this.tilemap = this.initTileMap(this.options.meshmap);
 
+        // this.viewer.scene.add(this.tilemap);
+        // this.viewer.scene.add(this.tilemap);
+        // this.viewer.scene.add(this.tilemap);
         // this.tilemap.castShadow = true;
 
         // console.log(this.tilemap, ' this.tilemap - ---------------- ')
@@ -134,8 +138,7 @@ export class Map extends EventMixin(
                 timestamp: Date.now(),
                 map: this
             });
-        });
-
+        }); 
         return tilemap;
     }
 

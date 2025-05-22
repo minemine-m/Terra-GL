@@ -38,6 +38,7 @@ export class TileLoader implements ITileLoader {
 	 * @returns Promise<MeshDateType> tile data
 	 */
 	public async load(params: TileLoadParamsType): Promise<MeshDateType> {
+		// console.log(params,'params -------------')
 		const geometry = await this.loadGeometry(params);
 		const materials = await this.loadMaterial(params);
 
@@ -49,6 +50,7 @@ export class TileLoader implements ITileLoader {
 
 		return { materials, geometry };
 	}
+	
 
 	/**
 	 * Unload tile mesh data

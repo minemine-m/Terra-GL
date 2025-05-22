@@ -378,6 +378,8 @@ export class TileMap extends Mesh<BufferGeometry, Material, TileMapEventMap> {
 			this.dispatchEvent({ type: "update", delta: elapseTime });
 		}
 
+		// console.log(this.rootTile,'this.rootTile - ---------------- ')
+
 		// 动态调整地图高度
 		// if (this.autoPosition) {
 		// 	// 平均海拔高度向量

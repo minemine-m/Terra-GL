@@ -39,7 +39,7 @@ export class MultiLineString extends Line {
             // 为每条线创建单独的几何体
             for (const linePositions of _position as Vector3[][]) {
                 const vertexPoints = linePositions.flatMap(v => [v.x, v.y, v.z]);
-                console.log('多线的vertexPoints:', vertexPoints);
+                // console.log('多线的vertexPoints:', vertexPoints);
                 const lineObject = await this._createLineObject(this._style, vertexPoints);
                 this._lineObjects.push(lineObject);
                 this._linesContainer.add(lineObject);

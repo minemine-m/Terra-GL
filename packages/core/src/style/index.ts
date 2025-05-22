@@ -273,7 +273,7 @@ export class Style {
     private _applyLineStyle(object: Object3D) {
         const config = this.config as BaseLineStyle;
         // let line = _createBasicLine(config, object.position as Vector3[])
-        console.log('line------------', config, object);
+        // console.log('line------------', config, object);
         if (object.parent) {
             let parent = object.parent as Feature;
             parent._threeGeometry = _createBasicLine(config, parent._vertexPoints);
