@@ -114,6 +114,7 @@ function main() {
 	});
 
 	addline();
+	addModelBuild();
 }
 
 
@@ -151,6 +152,41 @@ function addline() {
 
 }
 
+
+// 加载建筑
+function addModelBuild() {
+	let modelLayer = new terra.PointLayer('modelLayer');
+	map.addLayer(modelLayer);
+	let featuremodel1 = new terra.Model({
+		geometry: {
+			"coordinates": [
+				113.55175280557246, 34.793170730802366,
+				100
+			],
+			"type": "Point"
+		},
+		iscity: true,
+		style: {
+			type: 'fbx',
+			url: '/model/shanghai.FBX',
+			scale: {
+				x: 1,
+				y: 1,
+				z: 1
+			},
+			shadows: {
+				cast: true,
+				receive: true
+			},
+			dracoOptions: {
+				enable: true,
+				decoderPath: '/draco/'
+			}
+		}
+	})
+	featuremodel1.addTo(modelLayer);
+
+}
 
 
 main();

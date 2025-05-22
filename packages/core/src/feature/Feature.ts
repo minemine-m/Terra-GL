@@ -262,7 +262,7 @@ export abstract class Feature extends EventMixin(
     // 几何体更新 ==============================================
     _updateGeometry(): void {
         this._disposeGeometry();
-        this.clear();
+        // this.clear();
         if (this._threeGeometry) {
             this._threeGeometry.position.copy(this._position as any);
             this._threeGeometry.renderOrder = 999;
@@ -299,12 +299,9 @@ export abstract class Feature extends EventMixin(
 
     _disposeGeometry(): void {
         if (!this._threeGeometry) return;
-
-        // 从父级移除
-        this.remove(this._threeGeometry);
-
+        this.clear();
         // 递归释放资源
-        if ('traverse' in this._threeGeometry) {
+        if ('traverse' in this) {
             (this._threeGeometry as Object3D).traverse(obj => {
                 if (obj instanceof Mesh) {
                     obj.geometry?.dispose();
@@ -323,6 +320,6 @@ export abstract class Feature extends EventMixin(
         }
 
         // 清除引用
-        this._threeGeometry = null!;
+        // this._threeGeometry = null!;
     }
 }

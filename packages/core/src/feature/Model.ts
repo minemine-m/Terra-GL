@@ -80,7 +80,7 @@ export class Model extends Point {
             this.modelunino = await this._createObject(this._style);
             this._threeGeometry = this.modelunino.model;
 
-            console.log(this.modelunino, 'this.modelunino')
+           
             // 初始化动画系统
             if (this.modelunino.animations && this.modelunino.animations.length > 0) {
                 this._animations = this.modelunino.animations;
@@ -160,7 +160,7 @@ export class Model extends Point {
             if(this._iscity) this._rendercity()
             // this._rendercity()
 
-
+            console.log(this, '模型------------------------------------')
 
         }
     }
