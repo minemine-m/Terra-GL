@@ -1,9 +1,9 @@
-import { Vector3, AnimationMixer, LoopOnce, LoopRepeat, Clock, Mesh, Color } from 'three';
-import { PointOptions, Point } from './Point';
-import { Style } from '../style';
-import { _createModel } from '../utils/createobject';
-import { renderCity } from '../utils/build';
-import { MeshBuildGradientMaterial } from '../utils/build/material/MeshBuildGradientMaterial';
+import { Vector3, AnimationMixer, LoopOnce, LoopRepeat, Clock, Mesh, Color, Box3 } from "three";
+import { PointOptions, Point } from "./Point";
+import { Style } from "../style";
+import { _createModel } from "../utils/createobject";
+import { renderCity } from "../utils/build";
+import { MeshBuildGradientMaterial } from "../utils/build/material/MeshBuildGradientMaterial";
 
 export type ModelOptions = PointOptions & {
     emissive?: boolean;
@@ -11,44 +11,43 @@ export type ModelOptions = PointOptions & {
     emissiveColor?: string;
     castShadow?: boolean;
     receiveShadow?: boolean;
-    iscity?: boolean
+    iscity?: boolean;
 };
 
 const options: ModelOptions = {
     emissive: false,
     emissiveIntensity: 1.0,
-    emissiveColor: '#ffffff'
+    emissiveColor: "#ffffff",
 };
-
 
 // 定义动画参数类型
 interface AnimationPlayParams {
-    name: string | number;      // 动画名称或索引
-    loop?: boolean;             // 是否循环 (默认true)
-    speed?: number;             // 播放速度 (默认1)
-    fadeInDuration?: number;    // 淡入时间(秒) (默认0)
-    fadeOutDuration?: number;   // 淡出时间(秒) (默认0)
-    startAt?: number;           // 从指定时间开始 (秒) (默认0)
-    weight?: number;            // 动画权重 (0-1) (默认1)
+    name: string | number; // 动画名称或索引
+    loop?: boolean; // 是否循环 (默认true)
+    speed?: number; // 播放速度 (默认1)
+    fadeInDuration?: number; // 淡入时间(秒) (默认0)
+    fadeOutDuration?: number; // 淡出时间(秒) (默认0)
+    startAt?: number; // 从指定时间开始 (秒) (默认0)
+    weight?: number; // 动画权重 (0-1) (默认1)
 }
 
 interface AnimationUpdateParams {
-    deltaTime: number;          // 时间增量 (秒)
+    deltaTime: number; // 时间增量 (秒)
 }
 
 interface AnimationSpeedParams {
-    speed: number;              // 播放速度
+    speed: number; // 播放速度
 }
 
 interface AnimationPauseParams {
-    paused: boolean;            // 是否暂停
+    paused: boolean; // 是否暂停
 }
 
 export class Model extends Point {
-    _type: string = 'Model';
+    _type: string = "Model";
     private _emissive: boolean = false;
     private _emissiveIntensity: number = 1.0;
-    private _emissiveColor: string = '#ffffff';
+    private _emissiveColor: string = "#ffffff";
     private _mixer: AnimationMixer | null = null;
     private _currentAction: any = null;
     private _animations: any[] = [];
@@ -62,7 +61,7 @@ export class Model extends Point {
         // 初始化自发光属性
         this._emissive = options.emissive || false;
         this._emissiveIntensity = options.emissiveIntensity || 1.0;
-        this._emissiveColor = options.emissiveColor || '#ffffff';
+        this._emissiveColor = options.emissiveColor || "#ffffff";
 
         // 直接使用父类的阴影属性，不再重写访问器
         this.castShadow = options.castShadow || false;
@@ -82,7 +81,6 @@ export class Model extends Point {
             this.modelunino = await this._createObject(this._style);
             this._threeGeometry = this.modelunino.model;
 
-
             // 初始化动画系统
             if (this.modelunino.animations && this.modelunino.animations.length > 0) {
                 this._animations = this.modelunino.animations;
@@ -94,15 +92,15 @@ export class Model extends Point {
                     loop: true,
                     speed: 1.5,
                     fadeInDuration: 0.5,
-                    fadeOutDuration: 0.3
+                    fadeOutDuration: 0.3,
                 });
             }
             this._updateGeometry();
 
             this.setShadows({
                 cast: this.castShadow,
-                receive: this.receiveShadow
-            })
+                receive: this.receiveShadow,
+            });
 
             // 应用自发光属性
             this._applyEmissionProperties();
@@ -154,23 +152,20 @@ export class Model extends Point {
 
             //             this.add(line);
 
-
-
             //         }
             //     });
             // }, 5000);
-            if (this._iscity) this._rendercity()
+            if (this._iscity) this._rendercity();
             // this._rendercity()
 
-            console.log(this, '模型------------------------------------')
-
+            console.log(this, "模型------------------------------------");
         }
     }
 
     async _createObject(style: Style): Promise<any> {
         switch (style.config.type) {
-            case 'fbx':
-            case 'gltf':
+            case "fbx":
+            case "gltf":
                 return _createModel(style.config, this._position as Vector3);
             default:
                 throw new Error(`不支持的样式类型: ${style.config.type}`);
@@ -179,8 +174,8 @@ export class Model extends Point {
 
     private _applyEmissionProperties(): void {
         if (this._threeGeometry) {
-            this._threeGeometry.traverse((child) => {
-                if ('material' in child) {
+            this._threeGeometry.traverse(child => {
+                if ("material" in child) {
                     const material = (child as any).material;
                     if (material) {
                         material.emissiveIntensity = this._emissive ? this._emissiveIntensity : 0;
@@ -243,7 +238,7 @@ export class Model extends Point {
     }
     playAnimation(params: AnimationPlayParams): void {
         if (!this._mixer || this._animations.length === 0) {
-            console.warn('模型没有可用的动画');
+            console.warn("模型没有可用的动画");
             return;
         }
 
@@ -257,9 +252,10 @@ export class Model extends Point {
         }
 
         // 获取动画剪辑
-        const clip = typeof params.name === 'number'
-            ? this._animations[params.name]
-            : this._animations.find(anim => anim.name === params.name);
+        const clip =
+            typeof params.name === "number"
+                ? this._animations[params.name]
+                : this._animations.find(anim => anim.name === params.name);
 
         if (!clip) {
             console.warn(`找不到动画: ${params.name}`);
@@ -324,15 +320,13 @@ export class Model extends Point {
     }
     getAnimationDuration(params: { name: string | number }): number | null {
         let clip: any;
-        if (typeof params.name === 'number') {
+        if (typeof params.name === "number") {
             clip = this._animations[params.name];
         } else {
             clip = this._animations.find(anim => anim.name === params.name);
         }
         return clip ? clip.duration : null;
     }
-
-
 
     dispose(): void {
         this._stopAnimationLoop();
@@ -376,15 +370,11 @@ export class Model extends Point {
     }
 
     private _rendercity() {
-
         // const cityArray = ['CITY_UNTRIANGULATED'];
-        this.traverse((child) => {
+        this.traverse(child => {
             if (child instanceof Mesh && child.material) {
-
-
-                console.log(child.material, 'child.materialchild.materialchild.material')
+                console.log(child.material, "child.materialchild.materialchild.material");
                 child.castShadow = true;
-
 
                 // const geometry = new EdgesGeometry(child.geometry);
 
@@ -403,8 +393,6 @@ export class Model extends Point {
                 //     fog: false
                 // });
 
-
-
                 // const line = new LineSegments(geometry, material);
 
                 // line.name = 'surroundLine';
@@ -416,42 +404,139 @@ export class Model extends Point {
                 // this.add(line);
 
                 child.castShadow = true;
-                if (child.name === 'building') {
-                    renderCity(child, {
-                        BaseColor: new Color("#7BB2E4"),
-                        topColor: "#A0C4DA",
-                        flowColor: "#FFFFFF",
-                        effectColor: "#FFFFFF",
-                        opacity: 0.9,
-                        diffusionParams: {
-                            enabled: true,
-                            range: 5000,
-                            speed: 50000,
-                            // center: new Vector3(0, 0, 0)
-                        },
-                        flowParams: {
-                            enabled: false,
-                            range: 500,
-                            speed: 5000,
-                        },
-                        animationSpeed: 0.01
-                    });
+                if (child.name === "building") {
 
-
-                    // child.material = new MeshBuildGradientMaterial({
+                    // let material = new MeshBuildGradientMaterial({
                     //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
-                    //     // color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
-                    //     color: new Color('#489BD6'),
+                    //     // color: new THREE.Color('hsl(212, 43.00%, 35.10%)').multiplyScalar(1.5),
+                    //     color: new Color("#489BD6").multiplyScalar(1.4),
                     //     roughness: 0.7,
                     //     metalness: 0.3,
                     //     transparent: true,
                     //     opacity: 0.8,
                     //     envMapIntensity: 0.8,
                     //     shaderOption: {
-                    //         maxHight: 10, minRate: 0.25, maxRate: 1.5,
-                    //     }
+                    //         minRate: 0.5, // 底部亮度系数
+                    //         maxRate: 1.5, // 顶部亮度系数
+                    //         maxY: 122.84, // 使用图片中的maxY值（单位：米）
+                    //     },
                     // });
 
+                    const material = new MeshBuildGradientMaterial({
+                        color: new Color("#489BD6").multiplyScalar(1.4),
+                        shaderOption: {
+                          minY: 0,       // 建筑底部Y坐标
+                          maxY: 50,      // 建筑顶部Y坐标
+                          minRate: 0.3,  // 底部亮度系数
+                          maxRate: 1.5,  // 顶部亮度系数
+                          effects: {
+                            diffusion: {
+                              enabled: true,
+                              color: new Color('#9ecdff'),
+                              range: 500000,
+                              speed: 5000000,
+                            //   center: new Vector3(0, 0, 0)
+                            },
+                            flow: {
+                              enabled: true,
+                              color: new Color('#FFFFF'),
+                              range: 1000,
+                              speed: 3000,
+                            },
+                            sweep: {
+                              enabled: true,
+                              color: new Color('#ffffff'),
+                              width: 3,
+                              speed: 5
+                            }
+                          }
+                        }
+                      });
+
+
+
+
+                    const box = new Box3().setFromObject(child);
+                    material.updateBoundingBox(box.min.y, box.max.y);
+                    child.material = material;
+                    child.material.needsUpdate = true;
+
+
+
+                    // renderCity(child, {
+                    //     BaseColor: new Color("#7BB2E4"),
+                    //     topColor: "#A0C4DA",
+                    //     flowColor: "#FFFFFF",
+                    //     effectColor: "#FFFFFF",
+                    //     opacity: 0.9,
+                    //     diffusionParams: {
+                    //         enabled: true,
+                    //         range: 5000,
+                    //         speed: 50000,
+                    //         // center: new Vector3(0, 0, 0)
+                    //     },
+                    //     flowParams: {
+                    //         enabled: false,
+                    //         range: 500,
+                    //         speed: 5000,
+                    //     },
+                    //     animationSpeed: 0.01
+                    // });
+                    // const box = new Box3().setFromObject(child);
+                    // // const uMinWorldY = box.min.y + 1; // 最低点（可能是地面）
+                    // const uMaxWorldHeight = box.max.y;
+
+                    // console.log(uMaxWorldHeight, '模型最大高度--------------------------')
+
+                    // const box = new Box3().setFromObject(child);
+                    // console.log("模型包围盒信息:", {
+                    // 	minY: box.min.y, // 模型最低点Y值
+                    // 	maxY: box.max.y, // 模型最高点Y值
+                    // 	sizeY: box.max.y - box.min.y, // 模型总高度
+                    // });
+
+
+                    // let material = new MeshBuildGradientMaterial({
+                    // 	// color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
+                    // 	// color: new THREE.Color('hsl(212, 43.00%, 35.10%)').multiplyScalar(1.5),
+                    // 	color: new Color("#489BD6").multiplyScalar(1.4),
+                    // 	roughness: 0.7,
+                    // 	metalness: 0.3,
+                    // 	transparent: true,
+                    // 	opacity: 0.8,
+                    // 	envMapIntensity: 0.8,
+                    // 	shaderOption: {
+                    // 		minRate: 0.5, // 底部亮度系数
+                    // 		maxRate: 1.5, // 顶部亮度系数
+                    // 		maxY: 122.84, // 使用图片中的maxY值（单位：米）
+                    // 	},
+                    // });
+                    // const box = new Box3().setFromObject(child);
+                    // material.updateBoundingBox(box.min.y, box.max.y);
+                    // child.material = material;
+                    // child.material.needsUpdate = true;
+
+                    // console.log(uMinWorldY, '模型最小高度--------------------------')
+
+                    // child.material = new MeshBuildGradientMaterial({
+                    // 	// color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
+                    // 	// color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
+                    // 	color: new Color("#489BD6"),
+                    // 	roughness: 0.7,
+                    // 	metalness: 0.3,
+                    // 	transparent: true,
+                    // 	opacity: 0.8,
+                    // 	envMapIntensity: 0.8,
+                    // 	shaderOption: {
+                    //         minRate: 0.3,  // 底部亮度系数
+                    //         maxRate: 1.5,  // 顶部亮度系数
+                    //         maxY: 122.84 // 使用图片中的maxY值（单位：米）
+                    // 	},
+                    // });
+
+                    // // 确保材质参数已更新
+                    // // child.material.shaderOption.maxHight = box.max.y;
+                    // child.material.needsUpdate = true; // 强制更新材质
 
                     // console.log({
                     //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
@@ -468,8 +553,6 @@ export class Model extends Point {
                     // }, '我的建筑参数')
                 }
 
-
-
                 // child.castShadow = true;
                 // child.material = new MeshBuildGradientMaterial({
                 //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
@@ -485,7 +568,6 @@ export class Model extends Point {
                 //     }
                 // });
 
-
                 // const geometry = child.geometry;
                 // const edges = new EdgesGeometry(geometry);
                 // const line = new LineSegments(edges, new BuildLineMaterial);
@@ -494,16 +576,9 @@ export class Model extends Point {
                 // line.renderOrder = 999;
                 // //
                 // child.parent.add(line);
-
-
-
-
-
             }
         });
     }
-
-
 }
 
 Model.mergeOptions(options);
