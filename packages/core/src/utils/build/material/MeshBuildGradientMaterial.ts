@@ -1,22 +1,22 @@
 import * as THREE from 'three';
 
 interface ShaderEffectOptions {
-  // 扩散光效果配置
+  // 修改为圆环扩散效果配置
   diffusion?: {
     enabled: boolean;
     color: THREE.Color;
-    range: number;
-    speed: number;
+    width: number;      // 圆环宽度（原range改名）
+    speed: number;      // 扩散速度
+    maxDistance?: number; // 新增：最大扩散距离
     center?: THREE.Vector3;
   };
-  // 流光效果配置
+  // 保留原有其他效果
   flow?: {
     enabled: boolean;
     color: THREE.Color;
     range: number;
     speed: number;
   };
-  // 扫光效果配置
   sweep?: {
     enabled: boolean;
     color: THREE.Color;
@@ -26,11 +26,11 @@ interface ShaderEffectOptions {
 }
 
 interface ShaderOption {
-  minY: number; // 模型底部Y坐标
-  maxY: number; // 模型顶部Y坐标
-  minRate: number; // 底部亮度系数
-  maxRate: number; // 顶部亮度系数
-  effects?: ShaderEffectOptions; // 特效配置
+  minY: number;
+  maxY: number;
+  minRate: number;
+  maxRate: number;
+  effects?: ShaderEffectOptions;
 }
 
 interface MaterialOptions extends THREE.MeshStandardMaterialParameters {
@@ -65,10 +65,12 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
         diffusion: {
           enabled: false,
           color: new THREE.Color('#9ECDEC'),
-          range: 120,
-          speed: 600,
+          width: 20,     // 改为width表示圆环宽度
+          speed: 1,       // 调整速度为更合理的值
+          maxDistance: 100, // 新增默认值
           center: undefined
         },
+        // 保留其他效果默认配置
         flow: {
           enabled: false,
           color: new THREE.Color('#00E4FF'),
@@ -88,8 +90,6 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
     this.clock = new THREE.Clock();
     this.time = { value: 0 };
     this.startTime = { value: 0 };
-
-    // 自动计算动画
     this.animate();
   }
 
@@ -97,7 +97,7 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
     const { minY, maxY, minRate, maxRate, effects } = this.shaderOption;
     const heightRange = maxY - minY;
 
-    // 添加uniforms
+    // 更新uniforms（修改diffusion相关参数）
     shader.uniforms = {
       ...shader.uniforms,
       time: this.time,
@@ -107,12 +107,14 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
       uHeightRange: { value: heightRange },
       uMinRate: { value: minRate },
       uMaxRate: { value: maxRate },
-      // 特效相关uniforms
+      // 修改后的圆环扩散uniforms
       uDiffusionEnabled: { value: effects?.diffusion?.enabled ? 1 : 0 },
       uDiffusionColor: { value: effects?.diffusion?.color || new THREE.Color('#9ECDEC') },
-      uDiffusionRange: { value: effects?.diffusion?.range || 120 },
-      uDiffusionSpeed: { value: effects?.diffusion?.speed || 600 },
+      uDiffusionWidth: { value: effects?.diffusion?.width || 20 },
+      uDiffusionSpeed: { value: effects?.diffusion?.speed || 1 },
+      uDiffusionMaxDistance: { value: effects?.diffusion?.maxDistance || 100 },
       uDiffusionCenter: { value: effects?.diffusion?.center || new THREE.Vector3(0, 0, 0) },
+      // 保留其他效果uniforms
       uFlowEnabled: { value: effects?.flow?.enabled ? 1 : 0 },
       uFlowColor: { value: effects?.flow?.color || new THREE.Color('#00E4FF') },
       uFlowRange: { value: effects?.flow?.range || 10 },
@@ -123,7 +125,7 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
       uSweepSpeed: { value: effects?.sweep?.speed || 10 }
     };
 
-    // 修改顶点着色器
+    // 顶点着色器保持不变
     shader.vertexShader = `
       varying vec3 vWorldPosition;
       varying vec3 vPosition;
@@ -139,7 +141,7 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
       `
     );
 
-    // 修改片元着色器
+    // 修改片元着色器中的扩散光部分
     shader.fragmentShader = `
       #define PI 3.141592653589793
       varying vec3 vWorldPosition;
@@ -152,28 +154,25 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
       uniform float uMaxRate;
       uniform float time;
       uniform float uStartTime;
-      // 扩散光uniforms
+      // 修改后的圆环扩散uniforms
       uniform int uDiffusionEnabled;
       uniform vec3 uDiffusionColor;
-      uniform float uDiffusionRange;
+      uniform float uDiffusionWidth;
       uniform float uDiffusionSpeed;
+      uniform float uDiffusionMaxDistance;
       uniform vec3 uDiffusionCenter;
-      // 流光uniforms
+      // 其他效果uniforms保持不变
       uniform int uFlowEnabled;
       uniform vec3 uFlowColor;
       uniform float uFlowRange;
       uniform float uFlowSpeed;
-      // 扫光uniforms
       uniform int uSweepEnabled;
       uniform vec3 uSweepColor;
       uniform float uSweepWidth;
       uniform float uSweepSpeed;
       
       float distanceTo(vec2 src, vec2 dst) {
-        float dx = src.x - dst.x;
-        float dy = src.y - dst.y;
-        float dv = dx * dx + dy * dy;
-        return sqrt(dv);
+        return distance(src, dst);
       }
       
       ${shader.fragmentShader}
@@ -182,25 +181,42 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
       `
       #include <color_fragment>
       
-      // 高度渐变计算
+      // 保留高度渐变计算
       float normalizedHeight = clamp((vWorldPosition.y - uMinY) / uHeightRange, 0.0, 1.0);
       float heightFactor = smoothstep(0.0, 1.0, normalizedHeight);
       diffuseColor.rgb *= mix(uMinRate, uMaxRate, heightFactor);
       
-      // 扩散光效果
-      if (uDiffusionEnabled == 1) {
-        vec2 position2D = vec2(vWorldPosition.x, vWorldPosition.z);
-        vec2 center2D = vec2(uDiffusionCenter.x, uDiffusionCenter.z);
-        float dTime = mod(time * uDiffusionSpeed, uDiffusionRange * 2.0);
-        float uLen = distanceTo(position2D, center2D);
+      // ================= 修改为圆环扩散效果 =================
+    if (uDiffusionEnabled == 1) {
+    vec2 position2D = vec2(vWorldPosition.x, vWorldPosition.z);
+    vec2 center2D = vec2(uDiffusionCenter.x, uDiffusionCenter.z);
+    float distToCenter = distance(position2D, center2D);
+    
+    float progress = mod(time * uDiffusionSpeed, 1.0);
+    float currentRadius = progress * uDiffusionMaxDistance;
+    
+    if (distToCenter > currentRadius - uDiffusionWidth && 
+        distToCenter < currentRadius) {
+        // 核心亮度增强修改：
+        float ringFactor = smoothstep(
+            currentRadius - uDiffusionWidth,
+            currentRadius,
+            distToCenter
+        );
         
-        if (uLen < dTime && uLen > dTime - uDiffusionRange) {
-          float dIndex = sin((dTime - uLen) / uDiffusionRange * PI);
-          diffuseColor.rgb = mix(uDiffusionColor, diffuseColor.rgb, 1.0 - dIndex);
-        }
-      }
+        // 1. 增强亮度：颜色值乘以5倍（可根据需要调整）
+        vec3 highBrightnessColor = uDiffusionColor * 5.0;
+        
+        // 2. 改用加法混合模式（更亮）
+        diffuseColor.rgb += highBrightnessColor * (1.0 - ringFactor);
+        
+        // 3. 防止过曝（可选）
+        diffuseColor.rgb = min(diffuseColor.rgb, vec3(2.0));
+    }
+}
       
-      // 流光效果
+      // ================= 保留原有其他效果 =================
+      // 流光效果（保持不变）
       if (uFlowEnabled == 1) {
         float dTime = mod(time * uFlowSpeed, uFlowRange * 2.0);
         if (vPosition.z > dTime - uFlowRange && vPosition.z < dTime) {
@@ -209,7 +225,7 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
         }
       }
       
-      // 扫光效果
+      // 扫光效果（保持不变）
       if (uSweepEnabled == 1) {
         float sweepPos = mod(time * uSweepSpeed, 2.0);
         if (vHeight > sweepPos - uSweepWidth && vHeight < sweepPos) {
@@ -221,15 +237,42 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
     );
   }
 
-  // 更新包围盒
-  updateBoundingBox(minY: number, maxY: number) {
-    this.shaderOption.minY = minY;
-    this.shaderOption.maxY = maxY;
-    this.shaderOption.effects = this.shaderOption.effects || {};
+  // 新增：自动计算圆环扩散参数
+  setDiffusionFromObject(object: THREE.Object3D) {
+    if (!this.shaderOption.effects?.diffusion) return;
+    
+    const box = new THREE.Box3().setFromObject(object);
+    if (box.isEmpty()) return;
+    
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    
+    // 计算模型最远点距离
+    const corners = [
+      new THREE.Vector3(box.min.x, box.min.y, box.min.z),
+      new THREE.Vector3(box.max.x, box.max.y, box.max.z)
+    ];
+    let maxDistance = 0;
+    corners.forEach(corner => {
+      const d = center.distanceTo(corner);
+      if (d > maxDistance) maxDistance = d;
+    });
+    
+    this.shaderOption.effects.diffusion = {
+      ...this.shaderOption.effects.diffusion,
+      center: center,
+      maxDistance: maxDistance
+    };
     this.needsUpdate = true;
   }
 
-  // 更新特效参数
+  // 保留原有方法
+  updateBoundingBox(minY: number, maxY: number) {
+    this.shaderOption.minY = minY;
+    this.shaderOption.maxY = maxY;
+    this.needsUpdate = true;
+  }
+
   updateEffects(effects: Partial<ShaderEffectOptions>) {
     this.shaderOption.effects = {
       ...this.shaderOption.effects,
@@ -238,7 +281,6 @@ export class MeshBuildGradientMaterial extends THREE.MeshStandardMaterial {
     this.needsUpdate = true;
   }
 
-  // 动画循环
   private animate() {
     requestAnimationFrame(() => this.animate());
     this.time.value = this.clock.getElapsedTime();
