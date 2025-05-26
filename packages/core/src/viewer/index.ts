@@ -370,7 +370,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 * @returns AmbientLight
 	 */
 	private _createAmbLight() {
-		const ambLight = new AmbientLight(0xffffff, 1);
+		const ambLight = new AmbientLight(0xffffff, 0.1);
 		return ambLight;
 	}
 
@@ -379,7 +379,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 * @returns DirectionalLight
 	 */
 	private _createDirLight() {
-		const dirLight = new DirectionalLight(0xffffff, 1);
+		const dirLight = new DirectionalLight(0xffffff, 3.0);
 		dirLight.position.set(0, 2e3, 1e3);
 		dirLight.castShadow = true;
 		// 配置阴影相机

@@ -84,21 +84,21 @@ function main() {
 		meshmap: {
 			// 切片数据源
 			imgSource: [
-				new terra.TDTSource({
-					style: "img_w",
-					token: "baa4de006b9c36080686fb99885177a9",
-					url: `https://t1.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
-				}),
+				// new terra.TDTSource({
+				// 	style: "vec_w",
+				// 	token: "baa4de006b9c36080686fb99885177a9",
+				// 	url: `https://t1.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
+				// }),
 				// new terra.TDTSource({
 				// 	style: "cia_w",
 				// 	token: "baa4de006b9c36080686fb99885177a9",
 				// 	url: `https://t1.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
 				// }),
-				// new terra.MapBoxSource({
-				// 	token: MAPBOXKEY,
-				// 	dataType: "image",
-				// 	style: "mapbox.satellite",
-				// }),
+				new terra.MapBoxSource({
+					token: MAPBOXKEY,
+					dataType: "image",
+					style: "mapbox.satellite",
+				}),
 				// https://api.mapbox.com/styles/v1/criska/cm2myr6qx001t01pi0sf7estf.html?title=view&access_token=pk.eyJ1IjoiY3Jpc2thIiwiYSI6ImNsOGZjZW5oMzAzMWozbm1sejgxZXBpMnUifQ.6Q2QsN4FXSPxO7XbNDvikw&zoomwheel=true&fresh=true#13.72/30.82036/120.85454/0/64
 				// new terra.WMTSSource({
 				// 	urlTemplate: `http://192.168.88.205:8085/geoserver/zzgis/gwc/service/wmts?layer=zzgis%3Ahdgs_pipe_bs&style=&tilematrixset=EPSG%3A3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=EPSG:3857:{z}&TileCol={x}&TileRow={y}&authkey=${authkey}`,
@@ -115,7 +115,7 @@ function main() {
 	});
 
 	addline();
-	// addModelBuild();
+	addModelBuild();
 }
 
 
@@ -145,8 +145,9 @@ function addline() {
 	// console.log(pipeline, 'pipeline-------------------');
 	// pipeline.addTo(linelayer);
 
-	loadgeojsonpipe('/geojson/test2.json', '#12CEE9');
-
+	loadgeojsonpipe('/geojson/public.gsgx_pipe.json', '#0068F8');
+	loadgeojsonpipe('/geojson/public.wsgx_pipe.json', '#f85700');
+	// loadgeojsonpipe('/geojson/public.ysgx_pipe.json', '#057826');
 
 }
 
@@ -159,18 +160,18 @@ function addModelBuild() {
 		geometry: {
 			"coordinates": [
 				113.55175280557246, 34.793170730802366,
-				100
+				1
 			],
 			"type": "Point"
 		},
 		iscity: true,
 		style: {
-			type: 'gltf',
-			url: '/model/jzw0305.glb',
+			type: 'fbx',
+			url: '/model/52602.FBX',
 			scale: {
-				x: 100,
-				y: 100,
-				z: 100
+				x: 0.01,
+				y: 0.01,
+				z: 0.01
 			},
 			shadows: {
 				cast: true,
@@ -183,6 +184,11 @@ function addModelBuild() {
 		}
 	})
 	featuremodel1.addTo(modelLayer);
+	featuremodel1.setShadows({
+		cast: true,
+		receive: true
+	}); 
+
 
 }
 
@@ -229,12 +235,12 @@ function loadgeojsonpipe(url: any, color: any) {
 				}
 				// console.log(feature, 'modified geojson data ------------');
 
-				let pipeline = new terra.LineString({
+				let pipeline = new terra.MultiLineString({
 					"geometry": feature.geometry,
 					style: {
 						type: 'basic-line',
 						color: color,
-						width: 5,
+						width: 2,
 						// dashArray: [10, 10]
 					}
 				})

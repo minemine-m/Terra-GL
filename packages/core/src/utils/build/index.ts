@@ -1,14 +1,14 @@
 // import * as THREE from "three";
 
-import {Color,Vector3, Clock, Mesh, Sphere ,Box3, MeshPhongMaterial}   from "three";
+import { Color, Vector3, Clock, Mesh, Sphere, Box3, MeshPhongMaterial } from "three";
 
 
 
 interface RenderCityOptions {
-    materialColor?: string;
-    topColor?: string;
-    flowColor?: string;
-    effectColor?: string;
+    BaseColor?: string | Color;
+    topColor?: string | Color;
+    flowColor?: string | Color;
+    effectColor?: string | Color;
     opacity?: number;
     modRange?: number;
     modWidth?: number;
@@ -31,7 +31,7 @@ interface RenderCityOptions {
     };
 }
 
-export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
+export function renderCity(object: Mesh, options: RenderCityOptions = {}) {
     // Determine object's geometry box size
     object.geometry.computeBoundingBox();
     object.geometry.computeBoundingSphere();
@@ -42,6 +42,8 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
     const { center, radius } = geometry.boundingSphere as Sphere;
     const { max, min } = geometry.boundingBox as Box3;
 
+
+
     console.log(center, '模型中心点--------------------------')
 
     const size = new Vector3(
@@ -49,10 +51,23 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
         max.y - min.y,
         max.z - min.z
     );
+    // 在 JavaScript 中计算整个 Mesh 的世界高度
+    const box = new Box3().setFromObject(object);
+    const uMinWorldY = box.min.y + 1; // 最低点（可能是地面）
+    const uMaxWorldHeight = box.max.y - uMinWorldY; // 实际建筑高度范围
+
+    console.log(uMaxWorldHeight, '模型最大高度--------------------------')
+    console.log(uMinWorldY, '模型最小高度--------------------------')
+    // material.uniforms.uMaxWorldHeight = { value: uMaxWorldHeight };
+
+
+    console.log("模型尺寸 uSize:", size); // 打印 uSize 的值
+    console.log("模型最小点 min:", min);  // 打印 min 坐标
+    console.log("模型最大点 max:", max);  // 打印 max 坐标
 
     // Set default values
     const {
-        materialColor = "#3F90D9",
+        BaseColor = "#3F90D9",
         topColor = "#00F6E5",
         flowColor = "#00E4FF",
         effectColor = "#9ECDEC",
@@ -69,9 +84,10 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
     const StartTime = { value: 0 };
 
     forMaterial(object.material, (material: MeshPhongMaterial) => {
-        console.log(material,'---------------------------------------')
+        console.log(material, '---------------------------------------')
         material.transparent = true;
-        material.color.setStyle(materialColor);
+        // @ts-ignore
+        // material.color = materialColor;
 
 
         material.onBeforeCompile = (shader: any) => {
@@ -84,8 +100,12 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
             shader.uniforms.uMax = { value: max };
             shader.uniforms.uMin = { value: min };
             shader.uniforms.uRadius = { value: radius };
+            shader.uniforms.uMaxWorldHeight = { value: uMaxWorldHeight };
+            shader.uniforms.uMinWorldY = { value: uMinWorldY };
+
 
             // Color properties
+            shader.uniforms.uBaseColor = { value: new Color(BaseColor) };
             shader.uniforms.uTopColor = { value: new Color(topColor) };
             shader.uniforms.uColor = { value: new Color(effectColor) };
             shader.uniforms.uFlowColor = { value: new Color(flowColor) };
@@ -94,6 +114,8 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
             shader.uniforms.uOpacity = { value: opacity };
             shader.uniforms.uModRange = { value: modRange };
             shader.uniforms.uModWidth = { value: modWidth };
+
+
 
             // Effect switches
             shader.uniforms.uSwitch = {
@@ -125,7 +147,7 @@ export function renderCity(object:Mesh , options: RenderCityOptions = {}) {
                 )
             };
 
-      
+
             const fragment = `
 float distanceTo(vec2 src, vec2 dst) {
     float dx = src.x - dst.x;
@@ -147,6 +169,7 @@ vec3 getGradientColor(vec3 color1, vec3 color2, float index) {
 
 varying vec4 vPositionMatrix;
 varying vec3 vPosition;
+varying float vWorldY;
 
 uniform float time;
 uniform float uRadius;
@@ -161,20 +184,50 @@ uniform vec3 uFlow;
 uniform vec3 uColor;
 uniform vec3 uCenter;
 uniform vec3 uSwitch;
+uniform vec3 uBaseColor;
 uniform vec3 uTopColor;
 uniform vec3 uFlowColor;
 uniform vec3 uDiffusion; 
 uniform vec3 uDiffusionCenter;
+uniform float uMaxWorldHeight; // 整个场景的最高点 Y 值
+uniform float uMinWorldY; // 整个场景的最低点 Y 值
+
 
 void main() {
     `;
-
             const fragmentColor = `
-vec3 distColor = outgoingLight;
+vec3 distColor = outgoingLight * uBaseColor; // 将基础色与原始颜色相乘
 float dstOpacity = diffuseColor.a;
 
-float indexMix = vPosition.z / (uSize.z * 0.6);
-distColor = mix(distColor, uTopColor, indexMix);
+// // 片元着色器：修正Y轴计算（减去地面偏移）
+// float normalizedY = (vWorldY - uMinWorldY) / uMaxWorldHeight;
+// // float indexMix = clamp(normalizedY, 0.0, 1.0);
+// float indexMix = pow(normalizedY, 0.5); // 0.5降低高光区，提升暗部
+// distColor = mix(distColor, uTopColor, indexMix);
+
+
+
+// 1. 保持你的原始高度计算
+float normalizedY = (vWorldY - uMinWorldY) / (uMaxWorldHeight - uMinWorldY);
+normalizedY = clamp(normalizedY, 0.0, 1.0);
+
+// 2. 恢复矮建筑渐变（关键修改）
+float indexMix = log(normalizedY * 15.0 + 1.0) / log(11.0); // 完全恢复你的原始对数拉伸
+
+// 3. 仅对高建筑做温和限制（新增逻辑）
+if (normalizedY > 0.92) {                       // 仅针对顶部8%高度
+    float compression = smoothstep(0.92, 1.0, normalizedY);
+    indexMix = mix(indexMix, 0.65, compression); // 最高亮度降至65%
+}
+
+// 4. 强制矮建筑基础亮度（你的原始逻辑）
+float minTopMix = 0.3;
+if (normalizedY > 0.01) {
+    indexMix = max(indexMix, minTopMix * (1.0 - exp(-normalizedY * 5.0)));
+}
+
+
+distColor = mix(distColor, uTopColor, indexMix); // 应用渐变
 
 // Diffusion wave
 vec2 position2D = vec2(vPosition.x, vPosition.y);
@@ -202,42 +255,30 @@ if (uFlow.x > 0.5) {
     }
 }
 
-// gl_FragColor = vec4(distColor, dstOpacity * uStartTime);
-// 修改后的边缘强化代码（加入颜色保护机制）
-// float edge = length(fwidth(vPosition));
-// if(edge > 0.05 && edge < 0.1) { // 限制作用范围
-//     float edgeFactor = smoothstep(0.05, 0.1, edge);
-//     distColor = mix(
-//         distColor, 
-//         distColor * 1.5, // 提亮边缘而非变黑
-//         edgeFactor
-//     );
-// }
-    float edge = max(
-    length(fwidth(vPosition.xy)), 
-    length(fwidth(vPosition.z))
-);
-if(edge > 0.005) {
-    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.0), smoothstep(0.005, 0.01, edge));
-}
-gl_FragColor = vec4(distColor, uOpacity);
+
+// gl_FragColor = vec4(distColor, uOpacity);
+
+// 检查 vWorldY 的分布
+ gl_FragColor = vec4(vec3(distColor), uOpacity);
 
 
     `;
 
             shader.fragmentShader = shader.fragmentShader.replace("void main() {", fragment);
             shader.fragmentShader = shader.fragmentShader.replace(
-                '#include <dithering_fragment>', 
+                '#include <dithering_fragment>',
                 `#include <dithering_fragment>
                 ${fragmentColor}`
             );
 
-        
+
             const vertex = `
 varying vec4 vPositionMatrix;
 varying vec3 vPosition;
+varying float vWorldY;
 uniform float uStartTime;
 void main() {
+        vWorldY = (modelMatrix * vec4(position, 1.0)).y;
         vPositionMatrix = projectionMatrix * vec4(position, 1.0);
         vPosition = position;
         `;
@@ -249,11 +290,16 @@ vec3 transformed = vec3(position.x, position.y, position.z * uStartTime);
             shader.vertexShader = shader.vertexShader.replace("void main() {", vertex);
             shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", vertexPosition);
 
-            // material.shininess = 10;  // 增加高光锐度
-            // material.specular.set(0xffffff);  // 设置高光颜色
-            // material.flatShading = true;
+            material.shininess = 30;  // 增加高光锐度
+            material.specular.set(0xffffff);  // 设置高光颜色
+            material.flatShading = true;
 
-            
+
+            // material.emissive.set(0x222222); // 基础自发光
+            // material.emissiveIntensity = 0.5;
+            // material.shininess = 30; // 更锐利高光
+
+
         }
 
 
@@ -275,7 +321,7 @@ vec3 transformed = vec3(position.x, position.y, position.z * uStartTime);
 }
 
 function forMaterial(materials: any, callback: Function): void {
-    if (!callback || !materials) return ;
+    if (!callback || !materials) return;
     if (Array.isArray(materials)) {
         materials.forEach((mat) => {
             callback(mat);

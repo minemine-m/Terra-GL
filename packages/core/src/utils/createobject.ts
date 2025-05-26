@@ -64,15 +64,21 @@ export function _createBasicLine(
 
     // 3. 创建材质（支持虚线样式）
     const material = new LineMaterial({
-        color: new Color(config.color ?? 0xffffff), // 默认白色
-        linewidth: config.width ?? 1,              // 默认线宽1
+        color: new Color(config.color ?? 0xffffff),
+        linewidth: config.width ?? 2, // 增加默认线宽
         transparent: config.opacity !== undefined && config.opacity < 1,
-        opacity: config.opacity ?? 1,              // 默认不透明
-        dashed: !!config.dashArray,                // 是否虚线
-        dashScale: config.dashArray?.[0] ?? 1,     // 虚线比例
-        dashSize: config.dashArray?.[0] ?? 1,      // 虚线长度
-        gapSize: config.dashArray?.[1] ?? 0,       // 虚线间隔
-        resolution: config.resolution || new Vector2(1, 1) // 必须设置分辨率
+        opacity: config.opacity ?? 1,
+        dashed: !!config.dashArray,
+        dashScale: config.dashArray?.[0] ?? 1,
+        dashSize: config.dashArray?.[0] ?? 1,
+        gapSize: config.dashArray?.[1] ?? 0,
+        resolution: new Vector2(window.innerWidth, window.innerHeight), // 设置正确分辨率
+        alphaToCoverage: true // 启用 alpha 到覆盖
+    });
+
+    // 添加窗口大小变化监听
+    window.addEventListener('resize', () => {
+        material.resolution.set(window.innerWidth, window.innerHeight);
     });
 
     // 4. 创建线对象

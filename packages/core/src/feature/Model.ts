@@ -1,8 +1,10 @@
-import { Vector3, AnimationMixer, LoopOnce, LoopRepeat, Clock, Mesh } from 'three';
+import { Vector3, AnimationMixer, LoopOnce, LoopRepeat, Clock, Mesh, Color } from 'three';
 import { PointOptions, Point } from './Point';
 import { Style } from '../style';
 import { _createModel } from '../utils/createobject';
 import { renderCity } from '../utils/build';
+import { MeshBuildGradientMaterial } from '../utils/build/material/MeshBuildGradientMaterial';
+
 export type ModelOptions = PointOptions & {
     emissive?: boolean;
     emissiveIntensity?: number;
@@ -80,7 +82,7 @@ export class Model extends Point {
             this.modelunino = await this._createObject(this._style);
             this._threeGeometry = this.modelunino.model;
 
-           
+
             // 初始化动画系统
             if (this.modelunino.animations && this.modelunino.animations.length > 0) {
                 this._animations = this.modelunino.animations;
@@ -157,7 +159,7 @@ export class Model extends Point {
             //         }
             //     });
             // }, 5000);
-            if(this._iscity) this._rendercity()
+            if (this._iscity) this._rendercity()
             // this._rendercity()
 
             console.log(this, '模型------------------------------------')
@@ -378,77 +380,121 @@ export class Model extends Point {
         // const cityArray = ['CITY_UNTRIANGULATED'];
         this.traverse((child) => {
             if (child instanceof Mesh && child.material) {
-                // if (cityArray.includes(child.name)) {
-                //     // console.log(child, 'child----------------------');
-                //     // 建筑
-                //     renderCity(child, {
-                //         materialColor: "#3F90D9",
-                //         topColor: "#00E4FF",
-                //         flowColor: "#00E4FF",
-                //         effectColor: "#9ECDEC",
-                //         opacity: 1,
-                //         diffusionParams: {
-                //             enabled: true,
-                //             range: 150,
-                //             speed: 500,
-                //             // center: new Vector3(0, 0, 0)
-                //         },
-                //         animationSpeed: 0.01
-                //     });
 
 
-                //     // const geometry = new EdgesGeometry(child.geometry);
+                console.log(child.material, 'child.materialchild.materialchild.material')
+                child.castShadow = true;
 
-                //     // // 获取物体的世界坐标 旋转等
-                //     // const worldPosition = new Vector3();
-                //     // child.getWorldPosition(worldPosition);
 
-                //     // // this.effectGroup.add();
-                //     // const material = new LineBasicMaterial({
-                //     //     color: '#00FDFF',
-                //     //     linewidth: 1,
-                //     //     transparent: true,  // 必须设置为true才能使透明度生效
-                //     //     opacity: 0.3,      // 透明度值，范围0.0（完全透明）到1.0（完全不透明）
-                //     //     linecap: 'round',  // 注意：WebGL渲染器会忽略这个属性
-                //     //     linejoin: 'round'  // 注意：WebGL渲染器会忽略这个属性
-                //     // });
+                // const geometry = new EdgesGeometry(child.geometry);
 
-                //     // const line = new LineSegments(geometry, material);
+                // // 获取物体的世界坐标 旋转等
+                // const worldPosition = new Vector3();
+                // child.getWorldPosition(worldPosition);
 
-                //     // line.name = 'surroundLine';
+                // // this.effectGroup.add();
+                // const material = new LineBasicMaterial({
+                //     color: '#B9E0F4',
+                //     linewidth: 1,
+                //     transparent: true,  // 必须设置为true才能使透明度生效
+                //     opacity: 0.1,      // 透明度值，范围0.0（完全透明）到1.0（完全不透明）
+                //     linecap: 'round',  // 注意：WebGL渲染器会忽略这个属性
+                //     linejoin: 'round',  // 注意：WebGL渲染器会忽略这个属性
+                //     fog: false
+                // });
 
-                //     // line.scale.copy(child.scale);
-                //     // line.rotation.copy(child.rotation);
-                //     // line.position.copy(worldPosition);
 
-                //     // this.add(line);
-                //     // 添加包围线条效
-                //     // this.surroundLine(child);
-                // }else {
-                //     // child.visible = false;  // 必须设置为true才能使透明度生效
-                //     // this.remove(child);
-                // }
-                // console.log(child.material,'child.materialchild.materialchild.material')
-                renderCity(child, {
-                    materialColor: "#4179E2",
-                    topColor: "#9BBDFD",
-                    flowColor: "#72D2FF",
-                    effectColor: "#FFFFFF",
-                    opacity: 0.9,
-                    diffusionParams: {
-                        enabled: true,
-                        range: 50,
-                        speed: 500,
-                        // center: new Vector3(0, 0, 0)
-                    },
-                    flowParams:{
-                        enabled: false,
-                        range: 150,
-                        speed: 500,
-                    },
-                    animationSpeed: 0.01
-                });
-        
+
+                // const line = new LineSegments(geometry, material);
+
+                // line.name = 'surroundLine';
+
+                // line.scale.copy(child.scale);
+                // line.rotation.copy(child.rotation);
+                // line.position.copy(worldPosition);
+
+                // this.add(line);
+
+                child.castShadow = true;
+                if (child.name === 'building') {
+                    renderCity(child, {
+                        BaseColor: new Color("#7BB2E4"),
+                        topColor: "#A0C4DA",
+                        flowColor: "#FFFFFF",
+                        effectColor: "#FFFFFF",
+                        opacity: 0.9,
+                        diffusionParams: {
+                            enabled: true,
+                            range: 5000,
+                            speed: 50000,
+                            // center: new Vector3(0, 0, 0)
+                        },
+                        flowParams: {
+                            enabled: false,
+                            range: 500,
+                            speed: 5000,
+                        },
+                        animationSpeed: 0.01
+                    });
+
+
+                    // child.material = new MeshBuildGradientMaterial({
+                    //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
+                    //     // color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
+                    //     color: new Color('#489BD6'),
+                    //     roughness: 0.7,
+                    //     metalness: 0.3,
+                    //     transparent: true,
+                    //     opacity: 0.8,
+                    //     envMapIntensity: 0.8,
+                    //     shaderOption: {
+                    //         maxHight: 10, minRate: 0.25, maxRate: 1.5,
+                    //     }
+                    // });
+
+
+                    // console.log({
+                    //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
+                    //     // color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
+                    //     color: new Color('#335a80').multiplyScalar(1.4),
+                    //     roughness: 0.7,
+                    //     metalness: 0.3,
+                    //     transparent: true,
+                    //     opacity: 0.8,
+                    //     envMapIntensity: 0.8,
+                    //     shaderOption: {
+                    //         maxHight: 25, minRate: 0.25, maxRate: 1.5,
+                    //     }
+                    // }, '我的建筑参数')
+                }
+
+
+
+                // child.castShadow = true;
+                // child.material = new MeshBuildGradientMaterial({
+                //     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
+                //     // color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
+                //     color: new Color('#335a80').multiplyScalar(1.4),
+                //     roughness: 0.8,
+                //     metalness: 0,
+                //     transparent: true,
+                //     opacity:  0.8,
+                //     envMapIntensity: 0.8,
+                //     shaderOption: {
+                //         maxHight: 25, minRate: 0.25, maxRate: 1.5,
+                //     }
+                // });
+
+
+                // const geometry = child.geometry;
+                // const edges = new EdgesGeometry(geometry);
+                // const line = new LineSegments(edges, new BuildLineMaterial);
+                // line.rotation.x = -Math.PI * 0.5;
+                // line.position.copy(child.position);
+                // line.renderOrder = 999;
+                // //
+                // child.parent.add(line);
+
 
 
 

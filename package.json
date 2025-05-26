@@ -55,5 +55,8 @@
 		"gis",
 		"map",
 		"3D"
-	]
+	],
+	"dependencies": {
+		"meshline": "^3.3.1"
+	}
 }

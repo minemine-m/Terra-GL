@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Vector3, DirectionalLightHelper, Object3D } from "three";
 import { Viewer, ViewerOptions } from "../viewer";
 import { TileMapParams, TileMap } from "../meshmap";
 import { Coordinate } from "../types";
@@ -8,7 +8,7 @@ import { Layer } from "../layer/Layer";
 import { isNil } from "../utils";
 import { LayerContainer } from "../layer/LayerContainer";
 import { _createModel } from '../utils/createobject';
-
+// import { DirectionalLightHelper } from "three";
 
 // map的总配置（用嵌套对象区分模块）
 type MapOptions = {
@@ -46,7 +46,7 @@ export class Map extends EventMixin(
         // 默认配置（仅对可选属性 viewer 生效）
         const defaultOptions: Pick<Required<MapOptions>, "viewer"> = {
             viewer: {
-                antialias: false,
+                antialias: true,
                 stencil: true,
                 logarithmicDepthBuffer: true,
             }
@@ -98,19 +98,43 @@ export class Map extends EventMixin(
         this.viewer.scene.add(this._layerContainer);
 
 
-        // 默认开启阴影
+
+
+        console.log(this.viewer, 'this.viewer ----------------------')
+
+        // 默认开启阴影 - 平行光设置
         // this.dirLight.
-        this.viewer.dirLight.position.set(centerPostion.x + 80 * 1000, 1e5, centerPostion.z + 100 * 1000);
+        const x = 0.5;  // 右前方向
+        const y = 1;     // 上方（必须正值！）
+        const z = 0.5;   // 前方向
+        const size = 2000;
+        const mapSize = 5;
+        const near = 1;
+        const far = size * 3.5;
+        const radius = 1;
+        const bias = -0.0001 * 0;
+        this.viewer.dirLight.position.set(centerPostion.x + size * x, size * y, centerPostion.z + size * z);
         this.viewer.dirLight.target.position.copy(centerPostion);
-        this.viewer.dirLight.shadow.mapSize.width = 4096;
-        this.viewer.dirLight.shadow.mapSize.height = 4096;
-        this.viewer.dirLight.shadow.camera.near = 100;
-        this.viewer.dirLight.shadow.camera.far = 1e6;
-        this.viewer.dirLight.shadow.camera.left = -10000;
-        this.viewer.dirLight.shadow.camera.right = 10000;
-        this.viewer.dirLight.shadow.camera.top = 10000;
-        this.viewer.dirLight.shadow.camera.bottom = -10000;
-        this.viewer.dirLight.intensity = 2;
+        // 阴影配置
+        this.viewer.dirLight.castShadow = true;
+        this.viewer.dirLight.shadow.mapSize.width = 1024 * mapSize;
+        this.viewer.dirLight.shadow.mapSize.height = 1024 * mapSize;
+        this.viewer.dirLight.shadow.camera.near = near;
+        this.viewer.dirLight.shadow.camera.far = far;
+        this.viewer.dirLight.shadow.camera.left = -size;
+        this.viewer.dirLight.shadow.camera.bottom = -size;
+        this.viewer.dirLight.shadow.camera.top = size;
+        this.viewer.dirLight.shadow.camera.right = size;
+        this.viewer.dirLight.shadow.radius = radius;
+        this.viewer.dirLight.shadow.bias = bias;
+        this.viewer.dirLight.name = '平行光';
+        this.viewer.dirLight.intensity = 3;
+
+        console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
+
+        // 添加 DirectionalLightHelper（参数：光源对象，辅助线长度）
+        const lightHelper = new DirectionalLightHelper(this.viewer.dirLight, 5);
+        this.viewer.scene.add(lightHelper);
     }
 
 
@@ -138,7 +162,7 @@ export class Map extends EventMixin(
                 timestamp: Date.now(),
                 map: this
             });
-        }); 
+        });
         return tilemap;
     }
 
@@ -166,7 +190,7 @@ export class Map extends EventMixin(
                 throw new Error('Invalid id for the layer: ' + id);
             }
             layer._bindMap(this);
-            console.log(mapLayers,'mapLayers - ---------------- ')
+            console.log(mapLayers, 'mapLayers - ---------------- ')
             mapLayers.add(layer);
         }
         return this; // 确保所有路径都返回 this
