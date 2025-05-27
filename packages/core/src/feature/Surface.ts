@@ -96,7 +96,7 @@ export abstract class Surface extends Feature {
     _updateGeometry(): void {
 
         let styletype = this._style?.config.type;
-        console.log(styletype, 'this._style-------------------')
+        // console.log(styletype, 'this._style-------------------')
         this.clear();
         // this.add(this._threeGeometry)
         if (!this._threeGeometry || !this._vertexPoints?.length) {

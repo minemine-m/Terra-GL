@@ -151,7 +151,7 @@ export abstract class OverlayLayer<T extends Feature = Feature> extends Layer {
     //@internal
     _findInList(feature: Feature): number {
         // 二分查找算法，需要和图层的index结合
-        console.log(feature, '执行了查找方法');
+        // console.log(feature, '执行了查找方法');
         const len = this._feaList.length;
         if (len === 0) {
             return -1;

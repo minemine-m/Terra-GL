@@ -22,11 +22,11 @@ export class Polygon extends Surface {
         // this._type = options.type || 'circle'; // 设置类型
     }
     async _toThreeJSGeometry(): Promise<void> {
-        let { _vertexPoints, _positions } = this._coordsTransform(); // 进行坐标转换
-        console.log(JSON.stringify(_vertexPoints), '_vertexPoints')
-        console.log(JSON.stringify(_positions), '_positions')
+        let { _vertexPoints } = this._coordsTransform(); // 进行坐标转换
+        // console.log(JSON.stringify(_vertexPoints), '_vertexPoints')
+        // console.log(JSON.stringify(_positions), '_positions')
         this._vertexPoints = _vertexPoints;
-        console.log(this._vertexPoints, 'this._vertexPoints')
+        // console.log(this._vertexPoints, 'this._vertexPoints')
         if (this._style) {
             // 创建新几何体前先清除旧引用
             if (this._threeGeometry) {
@@ -34,7 +34,7 @@ export class Polygon extends Surface {
             }
 
             this._threeGeometry = await this._createObject(this._style);
-            console.log(this._threeGeometry,'water-----------------');
+            // console.log(this._threeGeometry,'water-----------------');
 
             this._updateGeometry();
 

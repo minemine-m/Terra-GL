@@ -44,7 +44,7 @@ export function renderCity(object: Mesh, options: RenderCityOptions = {}) {
 
 
 
-    console.log(center, '模型中心点--------------------------')
+    // console.log(center, '模型中心点--------------------------')
 
     const size = new Vector3(
         max.x - min.x,
@@ -56,14 +56,14 @@ export function renderCity(object: Mesh, options: RenderCityOptions = {}) {
     const uMinWorldY = box.min.y + 1; // 最低点（可能是地面）
     const uMaxWorldHeight = box.max.y - uMinWorldY; // 实际建筑高度范围
 
-    console.log(uMaxWorldHeight, '模型最大高度--------------------------')
-    console.log(uMinWorldY, '模型最小高度--------------------------')
-    // material.uniforms.uMaxWorldHeight = { value: uMaxWorldHeight };
+    // console.log(uMaxWorldHeight, '模型最大高度--------------------------')
+    // console.log(uMinWorldY, '模型最小高度--------------------------')
+    // // material.uniforms.uMaxWorldHeight = { value: uMaxWorldHeight };
 
 
-    console.log("模型尺寸 uSize:", size); // 打印 uSize 的值
-    console.log("模型最小点 min:", min);  // 打印 min 坐标
-    console.log("模型最大点 max:", max);  // 打印 max 坐标
+    // console.log("模型尺寸 uSize:", size); // 打印 uSize 的值
+    // console.log("模型最小点 min:", min);  // 打印 min 坐标
+    // console.log("模型最大点 max:", max);  // 打印 max 坐标
 
     // Set default values
     const {
@@ -84,7 +84,7 @@ export function renderCity(object: Mesh, options: RenderCityOptions = {}) {
     const StartTime = { value: 0 };
 
     forMaterial(object.material, (material: MeshPhongMaterial) => {
-        console.log(material, '---------------------------------------')
+        // console.log(material, '---------------------------------------')
         material.transparent = true;
         // @ts-ignore
         // material.color = materialColor;

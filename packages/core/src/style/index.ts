@@ -357,25 +357,23 @@ export class Style {
         return true;
     }
 
-
+    // @ts-ignore
     private _applyPolygonStyle(object: Object3D) {
-        console.log('applyModelStyle', object);
+        // @ts-ignore
         const config = this.config as BasePolygonStyle;
-        console.log('applyModelStyle', config);
+        
         return true
     }
-
+  // @ts-ignore
     private _applyExtrudeStyle(object: Object3D) {
-        console.log('applyModelStyle', object);
+        // @ts-ignore
         const config = this.config as ExtrudeStyle;
-        console.log('applyModelStyle', config);
         return true
     }
-
+  // @ts-ignore
     private _applyWaterStyle(object: Object3D) {
         const config = this.config as WaterStyle;
-        console.log('config ---------- water', config);
-        console.log('object ---------- water', object);
+
         if (config.type === 'water') {
             // this._applyIconPoint(object, config);
         } else {
@@ -388,22 +386,20 @@ export class Style {
     }
 
 
-
+  // @ts-ignore
     private _applyCloudStyle(object: Object3D) {
-        console.log('_applyCloudStyle', object);
+      // @ts-ignore
         const config = this.config as CloudStyle;
-        console.log('_applyCloudStyle', config);
         return true
     }
 
 
 
 
-
+      // @ts-ignore
     private async _applyModelStyle(object: Object3D) {
-        console.log('applyModelStyle', object);
+          // @ts-ignore
         const config = this.config as ModelStyle;
-        console.log('applyModelStyle', config);
         return true
 
 

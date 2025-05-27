@@ -158,7 +158,7 @@ export class Model extends Point {
 			if (this._iscity) this._rendercity();
 			// this._rendercity()
 
-			console.log(this, "模型------------------------------------");
+			// console.log(this, "模型------------------------------------");
 		}
 	}
 
@@ -373,7 +373,7 @@ export class Model extends Point {
 		// const cityArray = ['CITY_UNTRIANGULATED'];
 		this.traverse(child => {
 			if (child instanceof Mesh && child.material) {
-				console.log(child.material, "child.materialchild.materialchild.material");
+				// console.log(child.material, "child.materialchild.materialchild.material");
 				child.castShadow = true;
 
 				// const geometry = new EdgesGeometry(child.geometry);
@@ -553,7 +553,7 @@ export class Model extends Point {
 				}
 
 				if (child.name === "grass") {
-					console.log(child.material, '草--------------------------')
+					// console.log(child.material, '草--------------------------')
 					// 确保材质参数已更新
 					// child.material.shaderOption.maxHight = box.max.y;
 					// child.material.color = new Color("#298F80");

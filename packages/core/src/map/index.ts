@@ -101,7 +101,7 @@ export class Map extends EventMixin(
 
 
 
-        console.log(this.viewer, 'this.viewer ----------------------')
+        // console.log(this.viewer, 'this.viewer ----------------------')
 
         // 默认开启阴影 - 平行光设置
         // this.dirLight.
@@ -131,7 +131,7 @@ export class Map extends EventMixin(
         this.viewer.dirLight.name = '平行光';
         this.viewer.dirLight.intensity = 3;
 
-        console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
+        // console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
 
         // const shadowCameraHelper = new CameraHelper(this.viewer.dirLight.shadow.camera);
         // this.viewer.scene.add(shadowCameraHelper); // 将帮助器添加到场景
@@ -200,7 +200,7 @@ export class Map extends EventMixin(
                 throw new Error('Invalid id for the layer: ' + id);
             }
             layer._bindMap(this);
-            console.log(mapLayers, 'mapLayers - ---------------- ')
+            // console.log(mapLayers, 'mapLayers - ---------------- ')
             mapLayers.add(layer);
         }
         return this; // 确保所有路径都返回 this
