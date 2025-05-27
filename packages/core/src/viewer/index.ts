@@ -14,7 +14,8 @@ import {
 	WebGLRenderer,
 	CubeTextureLoader,
 	PCFSoftShadowMap,
-	SRGBColorSpace
+	ACESFilmicToneMapping,
+	
 } from "three";
 import Stats from 'three/addons/libs/stats.module.js';
 import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
@@ -252,16 +253,17 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		// renderer.debug.checkShaderErrors = true;
 		// renderer.toneMapping = 3;
 		// renderer.toneMappingExposure = 1;
-		// renderer.sortObjects = false;
+		renderer.sortObjects = true;
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.domElement.tabIndex = 0;
 
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = PCFSoftShadowMap; // 更好的阴影质量
 
-		// renderer.toneMapping = ACESFilmicToneMapping; // 使用更生动的色调映射
-		// renderer.toneMappingExposure = 1.2; // 增加曝光度
-		renderer.outputColorSpace = SRGBColorSpace;
+		renderer.toneMapping = ACESFilmicToneMapping; // 使用更生动的色调映射
+		renderer.toneMappingExposure = 2.0; // 增加曝光度
+		renderer.outputColorSpace = "srgb-linear"; // 确保输出颜色空间正确
+		// renderer.outputColorSpace = SRGBColorSpace;
 		if (renderer.capabilities.isWebGL2) {
 			const gl = renderer.getContext();
 			gl.getExtension('EXT_color_buffer_float');
@@ -303,7 +305,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 */
 	private _createControls() {
 		const controls = new MapControls(this.camera, this.renderer.domElement);
-		const MAX_POLAR_ANGLE = 1.4;
+		const MAX_POLAR_ANGLE = 1.55;
 
 		controls.target.set(0, 0, -3e3);
 		controls.screenSpacePanning = false;

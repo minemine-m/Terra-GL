@@ -1,4 +1,4 @@
-import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry } from 'three';
+import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial } from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
@@ -380,6 +380,66 @@ export function _createPolygongeometry(
         center,
         avgY
     }
+}
+
+
+export async function _createBaseWaterSurface(
+    config: WaterStyle,
+    vertices: number[]
+): Promise<Mesh> {
+    const {
+        geometry,
+        center,
+        avgY
+    } = _createPolygongeometry(vertices);
+
+    // 加载纹理并设置平铺
+    const texture = await Style._loadTexture(config.normalMap);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.repeat.set(0.01, 0.01);
+    texture.needsUpdate = true;
+
+    // 创建材质
+    const waterMaterial = new MeshStandardMaterial({
+        color: new Color(config.color),
+        roughness: 0.0,
+        metalness: 0.6,
+        transparent: true,
+        opacity: 0.9,
+        fog: false,
+        bumpMap: texture,
+        bumpScale: 0.6,
+        ...({})
+    });
+
+    // 创建水面网格
+    const water = new Mesh(geometry, waterMaterial);
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(center.x, avgY, center.z);
+    water.castShadow = false;
+    water.receiveShadow = true;
+
+    let lastTime = 0;
+    const animationSpeed = 2.5; // 可调整动画速度
+
+
+    water.onBeforeRender = () => {
+        const time = performance.now();
+        const delta = lastTime ? (time - lastTime) / 1000 : 0.016; // 计算时间差（秒）
+        
+        // 动态移动纹理（产生水流效果）
+        texture.offset.x += delta * animationSpeed * 0.1;
+        texture.offset.y += delta * animationSpeed * 0.05;
+        
+        lastTime = time;
+    };
+
+    // // 方法二：如果需要更复杂的控制，可以暴露API
+    // (water as any).setAnimationSpeed = (speed: number) => {
+    //     animationSpeed = speed;
+    // };
+
+    return water;
 }
 
 

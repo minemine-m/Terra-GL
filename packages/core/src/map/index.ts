@@ -1,4 +1,4 @@
-import { Vector3, DirectionalLightHelper, Object3D } from "three";
+import { Vector3, CameraHelper } from "three";
 import { Viewer, ViewerOptions } from "../viewer";
 import { TileMapParams, TileMap } from "../meshmap";
 import { Coordinate } from "../types";
@@ -8,6 +8,7 @@ import { Layer } from "../layer/Layer";
 import { isNil } from "../utils";
 import { LayerContainer } from "../layer/LayerContainer";
 import { _createModel } from '../utils/createobject';
+// import { CameraHelper } from "three";
 // import { DirectionalLightHelper } from "three";
 
 // map的总配置（用嵌套对象区分模块）
@@ -104,16 +105,16 @@ export class Map extends EventMixin(
 
         // 默认开启阴影 - 平行光设置
         // this.dirLight.
-        const x = 0.5;  // 右前方向
+        const x = 2;  // 右前方向
         const y = 1;     // 上方（必须正值！）
         const z = 0.5;   // 前方向
-        const size = 2000;
+        const size = 2800;
         const mapSize = 5;
         const near = 1;
         const far = size * 3.5;
-        const radius = 1;
+        const radius = 3;
         const bias = -0.0001 * 0;
-        this.viewer.dirLight.position.set(centerPostion.x + size * x, size * y, centerPostion.z + size * z);
+        this.viewer.dirLight.position.set(centerPostion.x + size * x, size * y * 2, centerPostion.z + size * z);
         this.viewer.dirLight.target.position.copy(centerPostion);
         // 阴影配置
         this.viewer.dirLight.castShadow = true;
@@ -131,10 +132,19 @@ export class Map extends EventMixin(
         this.viewer.dirLight.intensity = 3;
 
         console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
+        // 在您原有平行光配置代码之后，直接添加以下代码：
+        const shadowCameraHelper = new CameraHelper(this.viewer.dirLight.shadow.camera);
+        this.viewer.scene.add(shadowCameraHelper); // 将帮助器添加到场景
+
+        // // 可选：按需显示/隐藏帮助器（调试用）
+        // window.toggleShadowHelper = () => {
+        //     shadowCameraHelper.visible = !shadowCameraHelper.visible;
+        // };
+        // console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
 
         // 添加 DirectionalLightHelper（参数：光源对象，辅助线长度）
-        const lightHelper = new DirectionalLightHelper(this.viewer.dirLight, 5);
-        this.viewer.scene.add(lightHelper);
+        // const lightHelper = new DirectionalLightHelper(this.viewer.dirLight, 5);
+        // this.viewer.scene.add(lightHelper);
     }
 
 

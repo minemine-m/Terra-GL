@@ -80,7 +80,7 @@ function main() {
 			// 	defaultColor: '#2D3E5C'
 			// },
 		},
-		// 地图配置
+		//
 		meshmap: {
 			// 切片数据源
 			imgSource: [
@@ -116,6 +116,9 @@ function main() {
 
 	addline();
 	addModelBuild();
+	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
+
+	console.log(map, 'map-------------------');
 }
 
 
@@ -167,7 +170,7 @@ function addModelBuild() {
 		iscity: true,
 		style: {
 			type: 'fbx',
-			url: '/model/52602.FBX',
+			url: '/model/52701.FBX',
 			scale: {
 				x: 0.01,
 				y: 0.01,
@@ -262,8 +265,86 @@ function loadgeojsonpipe(url: any, color: any) {
 
 }
 
-function loadglbline() {
 
+function loadgeojsonpolygon(url: any, color: any) {
+	let waterpolygonLayer = new terra.PolygonLayer('waterpolygon');
+	map.addLayer(waterpolygonLayer);
+	fetch(url)
+		.then(res => res.json())
+		.then(data => {
+			data.features.forEach((feature: any) => {
+				if (feature.geometry && feature.geometry.coordinates) {
+					const geometry = feature.geometry;
+
+					// 计算当前要素的高度值（支持函数动态获取）
+					const currentZ = 1;
+
+					// 处理Polygon类型
+					if (geometry.type === 'Polygon') {
+						// 显式指定 ring 的类型为 any[]，解决隐式 any 类型问题
+						geometry.coordinates = geometry.coordinates.map((ring: any[]) =>
+							// 显式指定 coord 的类型为数组，元素类型为 any
+							ring.map((coord: any[]) => [coord[0], coord[1], currentZ])
+						);
+					}
+				}
+				// console.log(feature, 'modified geojson data ------------');
+
+				// let pipeline = new terra.MultiLineString({
+				// 	"geometry": feature.geometry,
+				// 	style: {
+				// 		type: 'basic-line',
+				// 		color: color,
+				// 		width: 5,
+				// 		// dashArray: [10, 10]
+				// 	}
+				// })
+
+				// pipeline.addTo(lineLayer);
+
+				const water = new terra.Polygon({
+					geometry: feature.geometry,
+					style: {
+						type: 'base-water',
+						normalMap: './image/waternormals.jpg',
+						color: '#0c99e5',         // 水面颜色
+						sunColor: '#FFB905', // 阳光颜色
+						opacity: 1             // 透明度
+
+
+					}
+				});
+
+				water.addTo(waterpolygonLayer);
+
+
+				// const expolygon = new terra.Polygon({
+				// 	geometry: feature.geometry,
+				// 	style: {
+				// 		type: 'extrude-polygon',
+				// 		color: '#FF44D5',
+				// 		opacity: 0.1,
+				// 		side: 'double',
+				// 		extrude: {
+				// 			height: 1000,          // 拉伸高度
+				// 			bevelEnabled: true  // 启用边缘斜角
+				// 		},
+			
+				// 	}
+				// });
+			
+				// expolygon.addTo(waterpolygonLayer);
+
+
+
+
+
+			});
+			return data;
+		})
+		.catch(err => {
+			console.error('加载geojson失败:', err);
+		});
 }
 
 main();

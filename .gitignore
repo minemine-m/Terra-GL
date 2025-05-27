@@ -8,6 +8,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Build and dependencies
 dist
 cache
 node_modules
@@ -25,4 +26,8 @@ mydocs
 *.sln
 *.sw?
 
+# Test files
 testSource
+
+# Ignore model files in packages/demo/public/model/
+packages/demo/public/model/*

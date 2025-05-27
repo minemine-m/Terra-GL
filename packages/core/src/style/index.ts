@@ -2,7 +2,7 @@ import {
     Color, Object3D, Points, PointsMaterial,
     Sprite, SpriteMaterial, TextureLoader,
     Texture, Group, Material, Vector2,
-    Vector3, LoadingManager
+    Vector3, LoadingManager, Matrix4
 } from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { _createBasicPoint, _createIconPoint, _createBasicLine } from '../utils/createobject';
@@ -62,7 +62,7 @@ export interface ExtrudeStyle extends BaseStyle {
 }
 
 
-export interface WaterStyle extends BaseStyle {
+export interface LightWaterStyle extends BaseStyle {
     type: 'water'
     color?: number | string;          // 水面颜色
     opacity?: number;                 // 透明度
@@ -73,6 +73,25 @@ export interface WaterStyle extends BaseStyle {
     normalMap: string;       // 自定义法线贴图
     fog?: boolean;                    // 是否受雾影响
 }
+
+
+
+export interface BaseWaterStyle extends BaseStyle {
+    type: 'base-water'
+    color?: number | string;          // 水面颜色
+    opacity?: number;                 // 透明度
+    sunDirection?: Vector3;           // 阳光方向
+    sunColor?: number | string;       // 阳光颜色
+    distortionScale?: number;         // 波纹强度
+    size?: number;                    // 波纹大小
+    normalMap: string;       // 自定义法线贴图
+    fog?: boolean;                    // 是否受雾影响
+}
+
+
+export type WaterStyle = BaseWaterStyle | LightWaterStyle;
+
+
 
 
 
@@ -120,8 +139,62 @@ export interface BaseLineStyle extends BaseStyle {
 }
 
 
+type CloudState = {
+    ref: Group
+    uuid: string
+    index: number
+    segments: number
+    dist: number
+    matrix: Matrix4
+    bounds: Vector3
+    position: Vector3
+    volume: number
+    length: number
+    speed: number
+    growth: number
+    opacity: number
+    fade: number
+    density: number
+    rotation: number
+    rotationFactor: number
+    color: Color
+}
 
 
+type CloudProps = {
+    /** 使用种子随机数可以确保云朵形态一致，默认: Math.random()  */
+    seed?: number
+    /** 云朵的分段或粒子数量，默认: 20  */
+    segments?: number
+    /** 云朵的3D边界范围，默认: [5, 1, 1] */
+    bounds?: Vector3
+    /** 分段体积在边界内的分布方式，默认: inside (边缘的云朵较小) */
+    concentrate?: 'random' | 'inside' | 'outside'
+    /**​ 分段的基础缩放比例   */
+    scale?: Vector3
+    /** 分段体积/厚度，默认: 6  */
+    volume?: number
+    /** 分布云朵时的最小体积，默认: 0.25 */
+    smallestVolume?: number
+    /** 可选的自定义分布函数（会覆盖其他设置），默认: null
+     *  point和volume都是比例值，point的x/y/z范围在-1到1之间，volume范围在0到1之间 */
+    distribute?: ((cloud: CloudState, index: number) => { point: Vector3; volume?: number }) | null
+    /** 动态云朵的生长系数（当speed > 0时生效），默认: 4 */
+    growth?: number
+    /** 动画速度系数，默认: 0 */
+    speed?: number
+    /** 相机距离达到该值时云朵会渐隐，默认: 10 */
+    fade?: number
+    /** 不透明度，默认: 1 */
+    opacity?: number
+    /** ​ 颜色，默认: 白色 */
+    color?: Color
+}
+
+
+export type CloudStyle = BaseStyle & CloudProps & {
+    type: 'cloud'
+}
 
 
 
@@ -132,7 +205,7 @@ export interface CustomStyle extends BaseStyle {
     build: () => Object3D | Promise<Object3D>;
 }
 
-export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle;
+export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle | CloudStyle | BaseWaterStyle;
 export type StyleInput = StyleConfig | Style;
 
 // 2. 样式主类 ==============================================
@@ -166,8 +239,10 @@ export class Style {
                 case 'extrude-polygon':
                     return this._applyExtrudeStyle(object);
                 case 'water':
+                case 'base-water':
                     return this._applyWaterStyle(object);
-
+                case 'cloud':
+                    return this._applyCloudStyle(object);
                 case 'custom':
                     return this._applyCustomStyle(object);
                 default:
@@ -298,11 +373,30 @@ export class Style {
     }
 
     private _applyWaterStyle(object: Object3D) {
-        console.log('applyModelStyle', object);
         const config = this.config as WaterStyle;
-        console.log('applyModelStyle', config);
+        console.log('config ---------- water', config);
+        console.log('object ---------- water', object);
+        if (config.type === 'water') {
+            // this._applyIconPoint(object, config);
+        } else {
+            // this._applyBasicPoint(object, config);
+        }
+        // console.log('applyModelStyle', object);
+        // const config = this.config as WaterStyle;
+        // console.log('applyModelStyle', config);
         return true
     }
+
+
+
+    private _applyCloudStyle(object: Object3D) {
+        console.log('_applyCloudStyle', object);
+        const config = this.config as CloudStyle;
+        console.log('_applyCloudStyle', config);
+        return true
+    }
+
+
 
 
 

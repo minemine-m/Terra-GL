@@ -137,7 +137,7 @@ export abstract class Surface extends Feature {
                 this._threeGeometry.renderOrder = 999;
                 this._threeGeometry.updateMatrix();
                 this.add(this._threeGeometry);
-            } else if (styletype === 'water') {
+            } else if (styletype?.includes('water')) {
                 // this._threeGeometry.renderOrder = 999;
                 this._threeGeometry.updateMatrix();
                 this.add(this._threeGeometry);

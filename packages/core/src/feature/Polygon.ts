@@ -1,6 +1,6 @@
 
-import { Object3D  } from 'three';
-import { _createBasePolygon, _createExtrudedPolygon, _createWaterSurface } from '../utils/createobject';
+import { Object3D } from 'three';
+import { _createBasePolygon, _createExtrudedPolygon, _createWaterSurface,_createBaseWaterSurface } from '../utils/createobject';
 // import { Line2 } from 'three/addons/lines/Line2.js';
 import { Style } from '../style';
 import { Surface, SurfaceOptions } from './Surface';
@@ -34,6 +34,7 @@ export class Polygon extends Surface {
             }
 
             this._threeGeometry = await this._createObject(this._style);
+            console.log(this._threeGeometry,'water-----------------');
 
             this._updateGeometry();
 
@@ -57,6 +58,9 @@ export class Polygon extends Surface {
             case 'water':
                 // alert('extrude-polygon')
                 return _createWaterSurface(style.config, this.getMap() as Map, this._vertexPoints);
+            case 'base-water':
+                // alert('extrude-polygon')
+                return _createBaseWaterSurface(style.config, this._vertexPoints);
             default:
                 throw new Error(`Unsupported style type: ${style.config.type}`);
         }

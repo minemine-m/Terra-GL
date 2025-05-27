@@ -422,7 +422,8 @@ export class Model extends Point {
 					// });
 
 					const material = new MeshBuildGradientMaterial({
-						color: new Color("#489BD6").multiplyScalar(1.4),
+						color: new Color("#6BA7EC").multiplyScalar(1.4),
+						opacity:0.8,
 						shaderOption: {
 							minY: 0, // 建筑底部Y坐标
 							maxY: 50, // 建筑顶部Y坐标
@@ -550,29 +551,14 @@ export class Model extends Point {
 					// }, '我的建筑参数')
 				}
 
-				// child.castShadow = true;
-				// child.material = new MeshBuildGradientMaterial({
-				//     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
-				//     // color: new THREE.Color('rgb(51,87,128)').multiplyScalar(1.5),
-				//     color: new Color('#335a80').multiplyScalar(1.4),
-				//     roughness: 0.8,
-				//     metalness: 0,
-				//     transparent: true,
-				//     opacity:  0.8,
-				//     envMapIntensity: 0.8,
-				//     shaderOption: {
-				//         maxHight: 25, minRate: 0.25, maxRate: 1.5,
-				//     }
-				// });
+				if (child.name === "grass") {
+					// 确保材质参数已更新
+					// child.material.shaderOption.maxHight = box.max.y;
+					child.material.color = new Color("#298F80");
+					child.material.needsUpdate = true; // 强制更新材质
+				}
 
-				// const geometry = child.geometry;
-				// const edges = new EdgesGeometry(geometry);
-				// const line = new LineSegments(edges, new BuildLineMaterial);
-				// line.rotation.x = -Math.PI * 0.5;
-				// line.position.copy(child.position);
-				// line.renderOrder = 999;
-				// //
-				// child.parent.add(line);
+		
 			}
 		});
 	}
