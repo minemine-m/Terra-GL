@@ -405,6 +405,7 @@ export class Model extends Point {
 
 				child.castShadow = true;
 				if (child.name === "building") {
+					
 					// let material = new MeshBuildGradientMaterial({
 					//     // color: new THREE.Color('rgb(43,100,141)').multiplyScalar(getNum(0.9, 1.1)),
 					//     // color: new THREE.Color('hsl(212, 43.00%, 35.10%)').multiplyScalar(1.5),
@@ -552,9 +553,13 @@ export class Model extends Point {
 				}
 
 				if (child.name === "grass") {
+					console.log(child.material, '草--------------------------')
 					// 确保材质参数已更新
 					// child.material.shaderOption.maxHight = box.max.y;
-					child.material.color = new Color("#298F80");
+					// child.material.color = new Color("#298F80");
+					child.castShadow = false;
+					child.material.emissiveIntensity = 0.1;
+					child.material.emissive = new Color("#3FD3BD");
 					child.material.needsUpdate = true; // 强制更新材质
 				}
 

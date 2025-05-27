@@ -1,4 +1,4 @@
-import { Vector3, CameraHelper } from "three";
+import { Vector3 } from "three";
 import { Viewer, ViewerOptions } from "../viewer";
 import { TileMapParams, TileMap } from "../meshmap";
 import { Coordinate } from "../types";
@@ -108,12 +108,12 @@ export class Map extends EventMixin(
         const x = 2;  // 右前方向
         const y = 1;     // 上方（必须正值！）
         const z = 0.5;   // 前方向
-        const size = 2800;
+        const size = 3000;
         const mapSize = 5;
         const near = 1;
         const far = size * 3.5;
         const radius = 3;
-        const bias = -0.0001 * 0;
+        const bias = -0.0001;
         this.viewer.dirLight.position.set(centerPostion.x + size * x, size * y * 2, centerPostion.z + size * z);
         this.viewer.dirLight.target.position.copy(centerPostion);
         // 阴影配置
@@ -132,9 +132,9 @@ export class Map extends EventMixin(
         this.viewer.dirLight.intensity = 3;
 
         console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
-        // 在您原有平行光配置代码之后，直接添加以下代码：
-        const shadowCameraHelper = new CameraHelper(this.viewer.dirLight.shadow.camera);
-        this.viewer.scene.add(shadowCameraHelper); // 将帮助器添加到场景
+
+        // const shadowCameraHelper = new CameraHelper(this.viewer.dirLight.shadow.camera);
+        // this.viewer.scene.add(shadowCameraHelper); // 将帮助器添加到场景
 
         // // 可选：按需显示/隐藏帮助器（调试用）
         // window.toggleShadowHelper = () => {

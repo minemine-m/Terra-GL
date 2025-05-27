@@ -305,7 +305,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	 */
 	private _createControls() {
 		const controls = new MapControls(this.camera, this.renderer.domElement);
-		const MAX_POLAR_ANGLE = 1.55;
+		const MAX_POLAR_ANGLE = 1.52;
 
 		controls.target.set(0, 0, -3e3);
 		controls.screenSpacePanning = false;

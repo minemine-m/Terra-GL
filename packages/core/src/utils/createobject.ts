@@ -401,7 +401,7 @@ export async function _createBaseWaterSurface(
 
     // 创建材质
     const waterMaterial = new MeshStandardMaterial({
-        color: new Color(config.color),
+        color: new Color(config.color).multiplyScalar(2.0),
         roughness: 0.0,
         metalness: 0.6,
         transparent: true,
