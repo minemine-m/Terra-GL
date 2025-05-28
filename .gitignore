@@ -11,6 +11,7 @@ lerna-debug.log*
 # Build and dependencies
 dist
 cache
+example
 node_modules
 *.local
 mydocs
