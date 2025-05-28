@@ -49,6 +49,14 @@ export abstract class OverlayLayer<T extends Feature = Feature> extends Layer {
             if (feature.getMap()) {
                 feature._toThreeJSGeometry();
             }
+            // debugger
+            if(this._clouds){
+                this.map.viewer.scene.add(this._clouds);
+                console.log('我是云朵被添加cloud', this.map.viewer.scene)
+                // this._clouds.add(feature._threeGeometry);
+                // console.log( this._clouds,'我是云朵被添加')
+              
+            }
             this.add(feature);
         }
 

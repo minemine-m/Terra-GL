@@ -2,7 +2,7 @@ import { Vector3, AnimationMixer, LoopOnce, LoopRepeat, Clock, Mesh, Color, Box3
 import { PointOptions, Point } from "./Point";
 import { Style } from "../style";
 import { _createModel } from "../utils/createobject";
-import { renderCity } from "../utils/build";
+// import { renderCity } from "../utils/build";
 import { MeshBuildGradientMaterial } from "../utils/build/material/MeshBuildGradientMaterial";
 
 export type ModelOptions = PointOptions & {

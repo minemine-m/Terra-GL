@@ -188,7 +188,8 @@ type CloudProps = {
     /** 不透明度，默认: 1 */
     opacity?: number
     /** ​ 颜色，默认: 白色 */
-    color?: Color
+    color?: Color,
+    hexcolor?: string,
 }
 
 

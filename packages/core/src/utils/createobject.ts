@@ -5,7 +5,8 @@ import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { Water } from 'three/addons/objects/Water.js';
 import { ModelLoader } from '../loaders/ModelLoader';
 import { Map } from '../map';
-import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, Style } from '../style';
+import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, Style } from '../style';
+import {  Cloud as vanillaCloud} from "@pmndrs/vanilla";
 
 // import earcut from 'earcut'; // 导入 earcut 库
 
@@ -426,11 +427,11 @@ export async function _createBaseWaterSurface(
     water.onBeforeRender = () => {
         const time = performance.now();
         const delta = lastTime ? (time - lastTime) / 1000 : 0.016; // 计算时间差（秒）
-        
+
         // 动态移动纹理（产生水流效果）
         texture.offset.x += delta * animationSpeed * 0.1;
         texture.offset.y += delta * animationSpeed * 0.05;
-        
+
         lastTime = time;
     };
 
@@ -442,6 +443,18 @@ export async function _createBaseWaterSurface(
     return water;
 }
 
+
+export function _createClouds(
+    config: CloudStyle, positions: Vector3
+) {
+    // clouds.add(cloud)
+    // let vanillacloudfonfig = config;
+    config.color = new Color(config.hexcolor);
+    const cloud = new vanillaCloud(config);
+    cloud.position.copy(positions);
+    // clouds.add(cloud)
+    return cloud;
+}
 
 
 

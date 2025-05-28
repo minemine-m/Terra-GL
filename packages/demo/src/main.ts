@@ -1,5 +1,7 @@
 
 import * as terra from "terra-gl";
+import * as vanilla from "@pmndrs/vanilla";
+import * as THREE from "three";
 
 const authkey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoienpzdyIsImFpZCI6IjY3ZjMzNDg5NDIxYWE5MGU2MDE1ZTNiOCIsImNpZCI6IjVlOGZmMDg4MzRmNmFjMGQxNGUzMzBhMSIsImNvbXBhbnkiOnsiaWQiOiI2N2YzMzZjMDQyMWFhOTBlNjA0NGQ2NjQiLCJuYW1lIjoi6YOR5bee5biC5rC05Yqh5YWs5Y-4IiwiY29kZSI6bnVsbH0sImV4cCI6MTc3OTI2MzMwNCwiZ3JvdXAiOiI2N2YzMzZjMDQyMWFhOTBlNjA0NGQ2NjQiLCJpYXQiOjE3NDc3MjczMDQsImlwIjoiMTAuODAuMC4xMDIiLCJqd3RJZCI6IjY4MmMzM2M4NDIxYWE5MGU2MDQ1NTIyYiIsIm1vYmlsZSI6IiIsIm5hbWUiOiLpg5Hlt57msLTliqHnrqHnkIblkZgiLCJyb2xlcyI6WyI2N2YzM2I3MTQyMWFhOTBlNjAxNWU2YzEiXSwic24iOiIwMSIsInRva2VuZnJvbSI6InVuaXdhdGVyIiwidWlkIjoiNjdmMzNhYTU0MjFhYTkwZTYwNDRkN2EwIn0.gj3lBni0MLG7IE_QhqTcoEXtx3Qtfiqfo050cKznTVQ";
 
@@ -45,40 +47,17 @@ function main() {
 		// (86.95, 27.98
 		center: [113.55175280557246, 34.793170730802366, 1000],
 		viewer: {
-			// 天空盒配置
-			// skybox: {
-			// 	path: "./image/skyboxall/bak1/",
-			// 	files: ["right.jpg", "left.jpg", "top.jpg", "down.jpg", "back.jpg", "front.jpg"],
-			// 	defaultColor: 0xffffff
-			// },
-			// skybox: {
-			// 	path: "./image/skybox/",
-			// 	files: ["px.png", "nx.png", "top.jpg", "top.jpg", "pz.png", "nz.png"],
-			// 	defaultColor: 0xffffff
-			// },
-			antialias:true,
+			antialias: true,
 			// 图片顺序对着的夜空1（有山） -------
 			skybox: {
 				path: "./image/skyboxall/SkyBox8/",
 				files: ["back.jpg", "front.jpg", "down.jpg", "top.jpg", "right.jpg", "left.jpg"],
 				defaultColor: '#121E3A'
 			},
-			// 图片顺序对着的夜空2（星空） -------
-			// skybox: {
-			// 	path: "./image/skyboxall/skyBox1/",
-			// 	files: [  "posx.jpg", // 原 px.png → +X 右
-			// 		"negx.jpg", // 原 nx.png → -X 左
-			// 		"posz.jpg", // 原 top.jpg → +Y 上（天空）
-			// 		"negz.jpg", // 需另提供 -Y 下（地面）
-			// 		"negy.jpg", // 原 pz.png → +Z 后
-			// 		"posy.jpg"],  // 原 nz.png → -Z 前],
-			// 	defaultColor: '#212B63'
-			// },
-			// skybox: {
-			// 	path: "./image/skyboxall/yewan/",
-			// 	files: ["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"],
-			// 	defaultColor: '#2D3E5C'
-			// },
+			cloudsparams: {
+				enabled: true,
+				texture: './image/cloud.png'
+			}
 		},
 		//
 		meshmap: {
@@ -117,8 +96,8 @@ function main() {
 	addline();
 	addModelBuild();
 	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
-
-	console.log(map, 'map-------------------');
+	// addCloud();
+	console.log(vanilla, 'vanilla-------------------');
 }
 
 
@@ -190,7 +169,7 @@ function addModelBuild() {
 	featuremodel1.setShadows({
 		cast: true,
 		receive: true
-	}); 
+	});
 
 
 }
@@ -257,10 +236,10 @@ function loadgeojsonpipe(url: any, color: any) {
 			console.error('加载geojson失败:', err);
 		});
 
-		// setTimeout(() => {
-		// 	let allfeatures = lineLayer.getFeatures();
-		// 	console.log(lineLayer.simplerender(), 'allfeatures-------------------');
-		// }, 1000);
+	// setTimeout(() => {
+	// 	let allfeatures = lineLayer.getFeatures();
+	// 	console.log(lineLayer.simplerender(), 'allfeatures-------------------');
+	// }, 1000);
 
 
 }
@@ -329,10 +308,10 @@ function loadgeojsonpolygon(url: any, color: any) {
 				// 			height: 1000,          // 拉伸高度
 				// 			bevelEnabled: true  // 启用边缘斜角
 				// 		},
-			
+
 				// 	}
 				// });
-			
+
 				// expolygon.addTo(waterpolygonLayer);
 
 
@@ -345,6 +324,34 @@ function loadgeojsonpolygon(url: any, color: any) {
 		.catch(err => {
 			console.error('加载geojson失败:', err);
 		});
+}
+
+function addCloud() {
+	let cloudsLayer = new terra.CloudsLayer('cloudsLayer',{texture:'./image/cloud.png'});
+	map.addLayer(cloudsLayer);
+	console.log(cloudsLayer, 'cloudsLayer-------------------');
+	let cloud = new terra.ICloud({
+		geometry: {
+			"coordinates": [
+				113.55175280557246, 34.793170730802366,
+				200
+			],
+			"type": "Point"
+		},
+		// iscity: true,
+		style: {
+			type: 'cloud',
+			hexcolor: 'ff0000',
+			speed: 0.8,
+			seed: 50,
+		}
+	})
+	// 不优雅，需要等cloudsLayer加载完成后再添加cloud
+	setTimeout(() => {
+		cloud.addTo(cloudsLayer);
+	}, 1000);
+	
+	// console.log(cloud, 'cloud-------------------');
 }
 
 main();

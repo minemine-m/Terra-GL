@@ -41,6 +41,8 @@ export abstract class Layer extends EventMixin(
     // public options: LayerOptions;
     private _id: string;
     public opacity: number = 1;
+    private _animationCallbacks = new Set<() => void>();
+
     // private _zIndex: number;
     constructor(id: string, options?: LayerOptions) {
         super();
@@ -50,11 +52,20 @@ export abstract class Layer extends EventMixin(
         }
         // group的id无法设置，因为他是只读属性
         this._id = id;
+
+        // 自动注册子类的 animate 方法（如果存在）
+        if (typeof (this as any).animate === 'function') {
+            this._registerAnimate();
+        }
     }
     getId(): string {
         return this._id;
     }
     addTo(map: Map) {
+        // 处理云朵图层逻辑
+        // if(this._clouds) {
+        //     map.viewer.scene.add(this._clouds);
+        // }
         map.addLayer(this);
         return this;
     }
@@ -69,34 +80,6 @@ export abstract class Layer extends EventMixin(
     getOpacity() {
         return this.opacity;
     }
-    // setOpacity(opacity: number) {
-    //     this.opacity = opacity;
-
-    //     this.children.forEach(child => {
-    //         // 处理Mesh
-    //         if (isMesh(child)) {
-    //             const materials = Array.isArray(child.material)
-    //                 ? child.material
-    //                 : [child.material];
-
-
-    //             materials.forEach((mat) => {
-    //                 mat.transparent = true;
-    //                 mat.opacity = opacity;
-    //                 console.log(mat,'mat - ---------------- ')
-    //             })
-
-    //         }
-
-    //         // 递归处理子Group
-    //         if (child.children.length > 0) {
-    //             this.setOpacity.call(child, opacity); // 保持this上下文
-    //         }
-    //     });
-
-
-    // }
-
     setOpacity(opacity: number) {
         this.opacity = opacity;
 
@@ -172,10 +155,16 @@ export abstract class Layer extends EventMixin(
         return this;
     }
     _bindMap(map: Map) {
+        debugger
         if (!map) {
             return;
         }
+
         this.map = map;
+        // 绑定动画
+        if (typeof (this as any).animate === 'function') {
+            this._registerAnimate();
+        }
         // if (!isNil(zIndex)) {
         //     this.setZIndex(zIndex);
         // }
@@ -184,6 +173,34 @@ export abstract class Layer extends EventMixin(
         // this.onAdd();
 
         // this.fire('add');
+    }
+
+
+    /**
+     * 子类可实现的动画逻辑（可选）
+     *  @param delta 帧间隔时间
+     */
+    protected animate?(delta: number,elapsedtime:number): void;
+
+    /**
+     * 注册动画回调到 Viewer
+     */
+    private _registerAnimate() {
+        const map = this.getMap();
+        if (!map?.viewer) return;
+
+        const removeCallback = map.viewer.addAnimationCallback((delta: number,elapsedtime:number) => {
+            this.animate?.(delta,elapsedtime); // 调用子类的 animate 方法
+        });
+
+        this._animationCallbacks.add(removeCallback);
+    }
+    /**
+     * 移除动画回调
+     */
+    protected _clearAnimationCallbacks() {
+        this._animationCallbacks.forEach(remove => remove());
+        this._animationCallbacks.clear();
     }
 
 

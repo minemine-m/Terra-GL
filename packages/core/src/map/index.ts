@@ -69,7 +69,7 @@ export class Map extends EventMixin(
         // 地图添加到场景
         this.viewer.scene.add(this.tilemap);
 
-        this.tilemap = this.initTileMap(this.options.meshmap);
+        // this.tilemap = this.initTileMap(this.options.meshmap);
 
         // this.viewer.scene.add(this.tilemap);
         // this.viewer.scene.add(this.tilemap);

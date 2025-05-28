@@ -14,15 +14,19 @@ import {
 	WebGLRenderer,
 	CubeTextureLoader,
 	PCFSoftShadowMap,
-	ACESFilmicToneMapping,
-	
+	ACESFilmicToneMapping
+
 } from "three";
 import Stats from 'three/addons/libs/stats.module.js';
-import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+// import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+// import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+// import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 import { Easing, Tween, update as teweenUpdate } from "three/examples/jsm/libs/tween.module.js";
+
+import { Clouds } from "@pmndrs/vanilla";
+// import { Style } from '../style';
+
 
 /**
  * Viewer event map
@@ -52,6 +56,10 @@ export type ViewerOptions = {
 		/** Default skybox color (used if skybox loading fails)  */
 		defaultColor?: number;
 	};
+	// cloudsparams?: {
+	// 	enabled: boolean;
+	// 	texture: string;
+	// };
 };
 
 /**
@@ -64,10 +72,13 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	public readonly controls: MapControls;
 	public readonly ambLight: AmbientLight;
 	public readonly dirLight: DirectionalLight;
+	public clouds: Clouds | null = null;
 	public container?: HTMLElement;
 	private readonly _clock: Clock = new Clock();
 	private stats: Stats;
-	private composer: EffectComposer;
+	//添加回调集合
+	private _animationCallbacks: Set<(delta: number,elapsedtime: number) => void> = new Set();
+	// private composer: EffectComposer;
 
 	private _fogFactor = 1.0;
 
@@ -113,6 +124,11 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		this.dirLight = this._createDirLight();
 		this.scene.add(this.dirLight);
 		this.scene.add(this.dirLight.target);
+		// debugger
+		// if (cloudsparams?.enabled) {
+		// 	this._createClouds(cloudsparams);
+		// 	// this.scene.add(this.clouds);
+		// }
 
 		this.renderer.setAnimationLoop(this.animate.bind(this));
 
@@ -120,42 +136,42 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		document.body.appendChild(this.stats.dom);
 
 
-		// ssao 先写这里
-		// 1. 初始化后处理器
-		this.composer = new EffectComposer(this.renderer);
+		// // ssao 先写这里
+		// // 1. 初始化后处理器
+		// this.composer = new EffectComposer(this.renderer);
 
 
 
-		// ✅ 创建 SSAOPass 时显式设置分辨率（匹配屏幕尺寸）
-		// 1. 创建基础渲染通道
-		const renderPass = new RenderPass(this.scene, this.camera);
+		// // ✅ 创建 SSAOPass 时显式设置分辨率（匹配屏幕尺寸）
+		// // 1. 创建基础渲染通道
+		// const renderPass = new RenderPass(this.scene, this.camera);
 
-		// 2. 初始化 SSAO (使用当前画布尺寸)
-		const ssaoPass = new SSAOPass(
-			this.scene,
-			this.camera,
-			this.width,
-			this.height
-		);
+		// // 2. 初始化 SSAO (使用当前画布尺寸)
+		// const ssaoPass = new SSAOPass(
+		// 	this.scene,
+		// 	this.camera,
+		// 	this.width,
+		// 	this.height
+		// );
 
-		// 3. 强制更新内部渲染目标分辨率
-		ssaoPass.normalRenderTarget.setSize(this.width, this.height);
-		ssaoPass.ssaoRenderTarget.setSize(this.width, this.height);
-		ssaoPass.blurRenderTarget.setSize(this.width, this.height);
+		// // 3. 强制更新内部渲染目标分辨率
+		// ssaoPass.normalRenderTarget.setSize(this.width, this.height);
+		// ssaoPass.ssaoRenderTarget.setSize(this.width, this.height);
+		// ssaoPass.blurRenderTarget.setSize(this.width, this.height);
 
-		// 4. 优化参数（地理场景适配）
-		ssaoPass.kernelRadius = 16;                  // 根据场景缩放调整
-		ssaoPass.minDistance = 1;                    // 避免近处噪点
-		ssaoPass.maxDistance = 1000;                 // 覆盖中远距离
-		ssaoPass.generateSampleKernel(24);           // 提升采样质量
-		ssaoPass.generateRandomKernelRotations();
-		ssaoPass.output = SSAOPass.OUTPUT.Default;   // 混合原始场景
+		// // 4. 优化参数（地理场景适配）
+		// ssaoPass.kernelRadius = 16;                  // 根据场景缩放调整
+		// ssaoPass.minDistance = 1;                    // 避免近处噪点
+		// ssaoPass.maxDistance = 1000;                 // 覆盖中远距离
+		// ssaoPass.generateSampleKernel(24);           // 提升采样质量
+		// ssaoPass.generateRandomKernelRotations();
+		// ssaoPass.output = SSAOPass.OUTPUT.Default;   // 混合原始场景
 
-		// 5. 设置 EffectComposer
-		this.composer = new EffectComposer(this.renderer);
-		this.composer.setSize(this.width, this.height);
-		this.composer.addPass(renderPass);
-		this.composer.addPass(ssaoPass);
+		// // 5. 设置 EffectComposer
+		// this.composer = new EffectComposer(this.renderer);
+		// this.composer.setSize(this.width, this.height);
+		// this.composer.addPass(renderPass);
+		// this.composer.addPass(ssaoPass);
 
 
 		// const ssaoPass = new SSAOPass(
@@ -412,15 +428,45 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	}
 
 	/**
+	* 添加动画循环回调
+ 	* @param callback 回调函数，接收deltaTime参数
+ 	* @returns 用于移除回调的函数
+	*/
+	public addAnimationCallback(callback: (delta: number,elapsedtime:number) => void): () => void {
+		this._animationCallbacks.add(callback);
+		return () => this._animationCallbacks.delete(callback);
+	}
+
+
+	/**
 	 * Threejs animation loop
 	 */
+	// private animate() {
+	// 	this.controls.update();
+	// 	this.renderer.render(this.scene, this.camera);
+	// 	teweenUpdate();
+	// 	this.stats.update();
+	// 	if (this.clouds) {
+	// 		this.clouds.update(this.camera, this._clock.getElapsedTime(), this._clock.getDelta());
+	// 	}
+	// 	// this.composer.render();
+	// 	this.dispatchEvent({ type: "update", delta: this._clock.getDelta() });
+	// }
 	private animate() {
+		const delta = this._clock.getDelta();
+		const elapsedtime  = this._clock.getElapsedTime()
+		
+		// 执行所有注册的回调
+		this._animationCallbacks.forEach(cb => cb(delta,elapsedtime));
+		
 		this.controls.update();
 		this.renderer.render(this.scene, this.camera);
 		teweenUpdate();
 		this.stats.update();
-		// this.composer.render();
-		this.dispatchEvent({ type: "update", delta: this._clock.getDelta() });
+		// if (this.clouds) {
+		// 	this.clouds.update(this.camera, this._clock.getElapsedTime(), delta);
+		// }
+		this.dispatchEvent({ type: "update", delta });
 	}
 
 	/**
@@ -460,4 +506,14 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 			cameraPosition: this.camera.position,
 		};
 	}
+
+	// private async _createClouds(cloudsconfig: ViewerOptions['cloudsparams']) {
+	// 	const texture = await Style._loadTexture(cloudsconfig?.texture || "");
+	// 	const clouds = new Clouds({
+	// 		texture,
+	// 	})
+	// 	this.clouds = clouds;
+	// 	this.scene.add(this.clouds);
+	// 	// return clouds
+	// }
 }
