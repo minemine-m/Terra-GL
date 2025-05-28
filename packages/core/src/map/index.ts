@@ -89,6 +89,7 @@ export class Map extends EventMixin(
         // 摄像机经纬度高度（m）转为世界坐标
         const cameraPosition = this.tilemap.geo2world(new Vector3(this.center[0], this.center[1] - 0.01, this.center[2] || 1000));
 
+        console.log(centerPostion, 'centerPostion 地图里---------------- ')
         // 调整摄像机位置
         this.viewer.camera.position.copy(cameraPosition);
         // 调整地图中心位置

@@ -43,8 +43,10 @@ export class ICloud extends Point {
                 this._disposeGeometry(); // 清除旧的几何体
             }
 
-            this._threeGeometry = await this._createObject(this._style);
-            console.log(this._threeGeometry, '云朵');
+            this._threeGeometry = await this._createObject(this._style) as any;
+            // this._threeGeometry.bounds = 
+
+            // console.log(this._threeGeometry, '云朵');
             this._updateGeometry();
 
             // 强制触发场景图更新
@@ -61,10 +63,17 @@ export class ICloud extends Point {
         // this.clear();
         if (this._threeGeometry) {
             this._threeGeometry.position.copy(this._position as any);
-            this._threeGeometry.renderOrder = 999;
-            console.log(layer, 'layer')
+            // console.log(this._position, 'this._position')
+       
+            this._threeGeometry.renderOrder = 1000;
+            // console.log(layer, 'layer')
             if (layer) {
+
+                // const localPosition = layer._clouds.worldToLocal(this._position);
+                // // console.log(localPosition, '变换后的');
+                // this._threeGeometry.position.copy(localPosition);
                 layer._clouds.add(this._threeGeometry);
+                layer._clouds.updateMatrixWorld(); // 强制更新矩阵
             }
 
 

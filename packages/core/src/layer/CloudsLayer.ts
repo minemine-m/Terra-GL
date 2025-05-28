@@ -1,7 +1,7 @@
 // 暂时废弃此类
 
 
-import { Texture } from 'three';
+import { Texture,Vector3 } from 'three';
 import { OverlayLayerOptions, OverlayLayer } from './OverlayLayer';
 import { ICloud } from '../feature/ICloud';
 import { Clouds } from "@pmndrs/vanilla";
@@ -34,7 +34,17 @@ export class CloudsLayer extends OverlayLayer<ICloud> {
             texture,
         });
 
+        clouds.renderOrder = 99999;
+        // clouds.scale.setScalar(100000);
         this._clouds = clouds;
+        // console.log(this.map, 'this.map -------------')
+        // let  centerPostion = this.map.viewer.camera.position.clone();
+
+        let centerPosition = this.map.geo2world(new Vector3(this.map.center[0], this.map.center[1], 0));
+        console.log(centerPosition, 'centerPosition');
+
+        // this._clouds.position.set(0, 0, 0); // 可选：设置位置，根据需要调整
+        // this._clouds.position.copy(centerPosition);
         // this.add(this._clouds);
     }
 
@@ -48,7 +58,7 @@ export class CloudsLayer extends OverlayLayer<ICloud> {
     protected animate(delta: number,elapsedtime:number) {
    
       if (this._clouds) {
-        console.log('循环里的',this._clouds)
+        // console.log('循环里的',this._clouds)
         this._clouds.update(this.map.viewer.camera, elapsedtime, delta);
       }
     }

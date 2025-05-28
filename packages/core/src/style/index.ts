@@ -190,6 +190,7 @@ type CloudProps = {
     /** ​ 颜色，默认: 白色 */
     color?: Color,
     hexcolor?: string,
+    boundstext?: { x: number ; y: number ; z: number  }
 }
 
 

@@ -450,7 +450,13 @@ export function _createClouds(
     // clouds.add(cloud)
     // let vanillacloudfonfig = config;
     config.color = new Color(config.hexcolor);
+    if(config.boundstext) {
+        config.bounds = new Vector3(config.boundstext.x, config.boundstext.y, config.boundstext.z); // 调整云的大小
+    }
+  
+    // console.log('---------------云朵样式', config)
     const cloud = new vanillaCloud(config);
+    cloud.scale.setScalar(50);
     cloud.position.copy(positions);
     // clouds.add(cloud)
     return cloud;

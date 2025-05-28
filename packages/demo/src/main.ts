@@ -96,7 +96,7 @@ function main() {
 	addline();
 	addModelBuild();
 	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
-	// addCloud();
+	addCloud();
 	console.log(vanilla, 'vanilla-------------------');
 }
 
@@ -329,21 +329,29 @@ function loadgeojsonpolygon(url: any, color: any) {
 function addCloud() {
 	let cloudsLayer = new terra.CloudsLayer('cloudsLayer',{texture:'./image/cloud.png'});
 	map.addLayer(cloudsLayer);
-	console.log(cloudsLayer, 'cloudsLayer-------------------');
+	// console.log(cloudsLayer, 'cloudsLayer-------------------');
 	let cloud = new terra.ICloud({
 		geometry: {
 			"coordinates": [
 				113.55175280557246, 34.793170730802366,
-				200
+				1000
 			],
 			"type": "Point"
 		},
 		// iscity: true,
 		style: {
 			type: 'cloud',
-			hexcolor: 'ff0000',
-			speed: 0.8,
-			seed: 50,
+			hexcolor: '#FFFFFF',
+			growth:15,
+			segments:60,
+			speed:0.1,
+			boundstext:{
+				x:40,
+				y:2,
+				z:20
+			}
+			// speed: 0.8,
+			// seed: 50,
 		}
 	})
 	// 不优雅，需要等cloudsLayer加载完成后再添加cloud
@@ -351,6 +359,8 @@ function addCloud() {
 		cloud.addTo(cloudsLayer);
 	}, 1000);
 	
+
+	console.log(map.viewer.scene, 'cloud-------------------');
 	// console.log(cloud, 'cloud-------------------');
 }
 
