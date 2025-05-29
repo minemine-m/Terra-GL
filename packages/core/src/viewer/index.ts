@@ -90,7 +90,10 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	/** Set fog factor, default 1 */
 	public set fogFactor(value) {
 		this._fogFactor = value;
-		this.controls.dispatchEvent({ type: "change" });
+		this.controls.dispatchEvent({ 
+			type: "change",
+			target: this.controls // 添加事件源引用
+		});
 	}
 
 	/** Container width */
