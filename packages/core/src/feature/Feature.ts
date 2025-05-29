@@ -1,5 +1,5 @@
 import { Point as GeoJSONPoint, MultiPoint as GeoJSONMultiPoint, LineString as GeoJSONLineString, MultiLineString as GeoJSONMultiLineString, Polygon as GeoJSONPolygon, MultiPolygon as GeoJSONMultiPolygon } from 'geojson';
-import { Line2 } from 'three/addons/lines/Line2.js';
+import { Line2 } from 'three-stdlib';
 import { Object3D, Vector3, Mesh } from 'three';
 import { BaseMixin, EventMixin } from "../core/mixins";
 import { requireParam } from "../utils/validate";

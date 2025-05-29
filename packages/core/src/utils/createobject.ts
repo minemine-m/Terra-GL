@@ -1,8 +1,5 @@
 import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial } from 'three';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
-import { Water } from 'three/addons/objects/Water.js';
+import { Line2,LineMaterial,LineGeometry,Water } from 'three-stdlib';
 import { ModelLoader } from '../loaders/ModelLoader';
 import { Map } from '../map';
 import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, Style } from '../style';
@@ -65,7 +62,7 @@ export function _createBasicLine(
 
     // 3. 创建材质（支持虚线样式）
     const material = new LineMaterial({
-        color: new Color(config.color ?? 0xffffff),
+        color: new Color(config.color ?? 0xffffff).getHex(),
         linewidth: config.width ?? 2, // 增加默认线宽
         transparent: config.opacity !== undefined && config.opacity < 1,
         opacity: config.opacity ?? 1,

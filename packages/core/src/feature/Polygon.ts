@@ -1,7 +1,6 @@
 
 import { Object3D } from 'three';
 import { _createBasePolygon, _createExtrudedPolygon, _createWaterSurface,_createBaseWaterSurface } from '../utils/createobject';
-// import { Line2 } from 'three/addons/lines/Line2.js';
 import { Style } from '../style';
 import { Surface, SurfaceOptions } from './Surface';
 import { Polygon as GeoJSONPolygon, MultiPolygon as GeoJSONMultiPolygon } from 'geojson';

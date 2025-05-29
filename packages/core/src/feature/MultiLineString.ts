@@ -1,7 +1,7 @@
 import {  Group } from 'three';
 import { LineOptions, Line } from './Line';
 import { _createBasicLine } from '../utils/createobject';
-import { Line2 } from 'three/addons/lines/Line2.js';
+import { Line2 } from 'three-stdlib';
 import { Style } from '../style';
 import { MultiLineString as GeoJSONMultiLineString } from 'geojson';
 import { Vector3 } from 'three';

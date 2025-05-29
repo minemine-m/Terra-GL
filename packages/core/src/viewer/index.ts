@@ -21,7 +21,7 @@ import Stats from 'three/addons/libs/stats.module.js';
 // import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 // import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 // import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { MapControls } from "three/examples/jsm/controls/MapControls.js";
+import { MapControls } from "three-stdlib";
 import { Easing, Tween, update as teweenUpdate } from "three/examples/jsm/libs/tween.module.js";
 
 import { Clouds } from "@pmndrs/vanilla";

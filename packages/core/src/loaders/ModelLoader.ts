@@ -1,7 +1,5 @@
 import { Group, Mesh, LoadingManager } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader,DRACOLoader,FBXLoader} from 'three-stdlib';
 import { ModelStyle } from '../style';
 
 

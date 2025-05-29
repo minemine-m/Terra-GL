@@ -1,10 +1,5 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-
+import { GLTFLoader,DRACOLoader,FBXLoader,KTX2Loader,MeshoptDecoder } from 'three-stdlib';
 interface LoadedModel {
     model: THREE.Group | THREE.Object3D;
     animations: THREE.AnimationClip[];

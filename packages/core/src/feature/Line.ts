@@ -2,9 +2,7 @@
 import { Vector2, Vector3 } from 'three';
 import { Feature, FeatureOptions } from './Feature';
 import { LineString as GeoJSONLineString, MultiLineString as GeoJSONMultiLineString } from 'geojson';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { Line2,LineMaterial,LineGeometry } from 'three-stdlib';
 import { Coordinate } from '../types';
 export type LineOptions = FeatureOptions & {
     geometry?: GeoJSONLineString | GeoJSONMultiLineString;

@@ -4,7 +4,7 @@ import {
     Texture, Group, Material, Vector2,
     Vector3, LoadingManager, Matrix4
 } from 'three';
-import { Line2 } from 'three/addons/lines/Line2.js';
+import { Line2 } from 'three-stdlib';
 import { _createBasicPoint, _createIconPoint, _createBasicLine } from '../utils/createobject';
 import { Feature } from '../feature/Feature';
 

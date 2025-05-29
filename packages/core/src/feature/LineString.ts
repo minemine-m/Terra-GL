@@ -2,7 +2,7 @@
 import { Object3D } from 'three';
 import { LineOptions, Line } from './Line';
 import { _createBasicLine } from '../utils/createobject';
-import { Line2 } from 'three/addons/lines/Line2.js';
+import { Line2 } from 'three-stdlib';
 import { Style } from '../style';
 
 export type LineStringOptions = LineOptions & {

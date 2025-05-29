@@ -2,9 +2,7 @@
 import { Vector2, Vector3, Mesh, BufferGeometry } from 'three';
 import { Feature, FeatureOptions } from './Feature';
 import { Polygon as GeoJSONPolygon, MultiPolygon as GeoJSONMultiPolygon } from 'geojson';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { Line2, LineMaterial, LineGeometry } from 'three-stdlib';
 import { Coordinate } from '../types';
 // import { ExtrudeStyle } from '../style';
 export type SurfaceOptions = FeatureOptions & {
@@ -132,8 +130,8 @@ export abstract class Surface extends Feature {
                 mesh.updateMatrix();
                 this.updateMatrixWorld(true);
             } else if (styletype === 'extrude-polygon') {
-           
-                
+
+
                 this._threeGeometry.renderOrder = 999;
                 this._threeGeometry.updateMatrix();
                 this.add(this._threeGeometry);
