@@ -100,7 +100,7 @@ function main() {
 	addModelBuild();
 	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
 	addCloud();
-	console.log(vanilla, 'vanilla-------------------');
+	// console.log(vanilla, 'vanilla-------------------');
 }
 
 
