@@ -226,7 +226,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 
 
 				// scene.environment.intensity = 2.0;  // 环境光补偿
-				// this.dirLight.intensity = 30;           // 主光源补偿
+				this.dirLight.intensity = 5;           // 主光源补偿
 				// (scene as any).backgroundIntensity = 2.0; // 类型断言绕过检查
 				// 应用曝光设置
 				if (skyboxConfig?.hdrExposure !== undefined) {

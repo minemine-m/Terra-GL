@@ -449,6 +449,7 @@ export function _createClouds(
     config.color = new Color(config.hexcolor);
     if(config.boundstext) {
         config.bounds = new Vector3(config.boundstext.x, config.boundstext.y, config.boundstext.z); // 调整云的大小
+        // config.scale = new Vector3(1, 0.01, 1); // 调整云的大小
     }
   
     // console.log('---------------云朵样式', config)
@@ -456,7 +457,9 @@ export function _createClouds(
     const cloud = new vanillaCloud(config);
     cloud.castShadow = true; // 允许云投射阴影
     cloud.scale.setScalar(50);
+    
     cloud.position.copy(positions);
+    
     // clouds.add(cloud)
     return cloud;
 }

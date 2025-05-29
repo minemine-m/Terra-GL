@@ -1,7 +1,7 @@
 // 暂时废弃此类
 
 
-import { Texture,Vector3 } from 'three';
+import { Texture,MeshBasicMaterial } from 'three';
 import { OverlayLayerOptions, OverlayLayer } from './OverlayLayer';
 import { ICloud } from '../feature/ICloud';
 import { Clouds } from "@pmndrs/vanilla";
@@ -32,6 +32,7 @@ export class CloudsLayer extends OverlayLayer<ICloud> {
         const texture = await Style._loadTexture(teture as string);
         const clouds = new Clouds({
             texture,
+            material: MeshBasicMaterial
         });
 
         clouds.castShadow = true;
