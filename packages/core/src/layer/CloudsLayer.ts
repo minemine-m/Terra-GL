@@ -34,14 +34,15 @@ export class CloudsLayer extends OverlayLayer<ICloud> {
             texture,
         });
 
+        clouds.castShadow = true;
         clouds.renderOrder = 99999;
         // clouds.scale.setScalar(100000);
         this._clouds = clouds;
         // console.log(this.map, 'this.map -------------')
         // let  centerPostion = this.map.viewer.camera.position.clone();
 
-        let centerPosition = this.map.geo2world(new Vector3(this.map.center[0], this.map.center[1], 0));
-        console.log(centerPosition, 'centerPosition');
+        // let centerPosition = this.map.geo2world(new Vector3(this.map.center[0], this.map.center[1], 0));
+        // console.log(centerPosition, 'centerPosition');
 
         // this._clouds.position.set(0, 0, 0); // 可选：设置位置，根据需要调整
         // this._clouds.position.copy(centerPosition);

@@ -455,7 +455,9 @@ export function _createClouds(
     }
   
     // console.log('---------------云朵样式', config)
+   
     const cloud = new vanillaCloud(config);
+    cloud.castShadow = true; // 允许云投射阴影
     cloud.scale.setScalar(50);
     cloud.position.copy(positions);
     // clouds.add(cloud)
