@@ -14,14 +14,20 @@ import {
 	WebGLRenderer,
 	CubeTextureLoader,
 	PCFSoftShadowMap,
-	ACESFilmicToneMapping
+	ACESFilmicToneMapping,
+	CubeReflectionMapping,
+	LinearSRGBColorSpace,
+	CubeRefractionMapping,
+	PMREMGenerator,
+	FloatType
+
 
 } from "three";
 import Stats from 'three/addons/libs/stats.module.js';
 // import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 // import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 // import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { MapControls } from "three-stdlib";
+import { MapControls, RGBELoader, } from "three-stdlib";
 import { Easing, Tween, update as teweenUpdate } from "three/examples/jsm/libs/tween.module.js";
 
 import { Clouds } from "@pmndrs/vanilla";
@@ -49,12 +55,18 @@ export type ViewerOptions = {
 	skybox?: {
 		/** ​ Path to skybox images */
 		path?: string;
+		hdr?: string;
 		/**
 		 * Skybox image file names in order: [px, nx, py, ny, pz, nz]
 		 */
 		files?: string[];
 		/** Default skybox color (used if skybox loading fails)  */
 		defaultColor?: number;
+
+		// 新增HDR专用参数
+		hdrEquirectangular?: boolean; // true为等距柱状投影，false为立方体贴图
+		hdrExposure?: number;
+		hdrEncoding?: number;
 	};
 	// cloudsparams?: {
 	// 	enabled: boolean;
@@ -77,7 +89,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	private readonly _clock: Clock = new Clock();
 	private stats: Stats;
 	//添加回调集合
-	private _animationCallbacks: Set<(delta: number,elapsedtime: number) => void> = new Set();
+	private _animationCallbacks: Set<(delta: number, elapsedtime: number) => void> = new Set();
 	// private composer: EffectComposer;
 
 	private _fogFactor = 1.0;
@@ -90,7 +102,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	/** Set fog factor, default 1 */
 	public set fogFactor(value) {
 		this._fogFactor = value;
-		this.controls.dispatchEvent({ 
+		this.controls.dispatchEvent({
 			type: "change",
 			target: this.controls // 添加事件源引用
 		});
@@ -137,68 +149,6 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 
 		this.stats = new Stats();
 		document.body.appendChild(this.stats.dom);
-
-
-		// // ssao 先写这里
-		// // 1. 初始化后处理器
-		// this.composer = new EffectComposer(this.renderer);
-
-
-
-		// // ✅ 创建 SSAOPass 时显式设置分辨率（匹配屏幕尺寸）
-		// // 1. 创建基础渲染通道
-		// const renderPass = new RenderPass(this.scene, this.camera);
-
-		// // 2. 初始化 SSAO (使用当前画布尺寸)
-		// const ssaoPass = new SSAOPass(
-		// 	this.scene,
-		// 	this.camera,
-		// 	this.width,
-		// 	this.height
-		// );
-
-		// // 3. 强制更新内部渲染目标分辨率
-		// ssaoPass.normalRenderTarget.setSize(this.width, this.height);
-		// ssaoPass.ssaoRenderTarget.setSize(this.width, this.height);
-		// ssaoPass.blurRenderTarget.setSize(this.width, this.height);
-
-		// // 4. 优化参数（地理场景适配）
-		// ssaoPass.kernelRadius = 16;                  // 根据场景缩放调整
-		// ssaoPass.minDistance = 1;                    // 避免近处噪点
-		// ssaoPass.maxDistance = 1000;                 // 覆盖中远距离
-		// ssaoPass.generateSampleKernel(24);           // 提升采样质量
-		// ssaoPass.generateRandomKernelRotations();
-		// ssaoPass.output = SSAOPass.OUTPUT.Default;   // 混合原始场景
-
-		// // 5. 设置 EffectComposer
-		// this.composer = new EffectComposer(this.renderer);
-		// this.composer.setSize(this.width, this.height);
-		// this.composer.addPass(renderPass);
-		// this.composer.addPass(ssaoPass);
-
-
-		// const ssaoPass = new SSAOPass(
-		// 	this.scene,
-		// 	this.camera,
-		// 	window.innerWidth,
-		// 	window.innerHeight
-		// );
-		// saoPass.params.output = THREE.SAOPass.OUTPUT.Default;
-		// saoPass.params.saoBias = 0.5;
-		// saoPass.params.saoIntensity = 0.05;
-		// saoPass.params.saoScale = 100;
-		// saoPass.params.saoKernelRadius = 10;
-		// saoPass.params.saoMinResolution = 0;
-		// saoPass.params.saoBlur = true;
-		// composer = new EffectComposer(renderer);
-		// composer.addPass(renderPass);
-		// composer.addPass(saoPass);
-
-
-		// 		ssaoPass.intensity = 0.5;  // 原值可能为1.5~2.0（图2参数）
-		// ssaoPass.bias = 0.01;      // 减小遮蔽偏移
-
-		// this.composer.addPass(ssaoPass);
 	}
 
 	/**
@@ -247,8 +197,52 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 					scene.background = new Color(backColor);
 				}
 			);
+		} else if (skyboxConfig?.hdr) {
+			// hdr
+			this._loadHDRWithPMREM(scene, skyboxConfig);
 		}
 		return scene;
+	}
+
+	private async _loadHDRWithPMREM(scene: Scene, skyboxConfig: ViewerOptions['skybox']) {
+		try {
+			if (skyboxConfig) {
+				const hdrLoader = new RGBELoader()
+					.setPath(skyboxConfig.path || '')
+					.setDataType(FloatType);
+
+				const hdrTexture = await hdrLoader.loadAsync(skyboxConfig.hdr!);
+				hdrTexture.colorSpace = LinearSRGBColorSpace;
+
+				// 使用PMREMGenerator处理HDR贴图
+				const pmremGenerator = new PMREMGenerator(this.renderer);
+				const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
+
+
+				console.log('HDR加载完成:', hdrTexture, '环境贴图:', envMap);
+				// 设置场景背景和环境
+				scene.background = envMap;
+				scene.environment = envMap;
+
+
+				// scene.environment.intensity = 2.0;  // 环境光补偿
+				// this.dirLight.intensity = 30;           // 主光源补偿
+				// (scene as any).backgroundIntensity = 2.0; // 类型断言绕过检查
+				// 应用曝光设置
+				if (skyboxConfig?.hdrExposure !== undefined) {
+					this.renderer.toneMappingExposure = skyboxConfig.hdrExposure;
+				}
+
+				// 释放资源
+				hdrTexture.dispose();
+
+				pmremGenerator.dispose();
+			}
+
+		} catch (error) {
+			console.error('加载HDR失败:', error);
+			scene.background = new Color(skyboxConfig?.defaultColor || 0xdbf0ff);
+		}
 	}
 
 	/**
@@ -432,10 +426,10 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 
 	/**
 	* 添加动画循环回调
- 	* @param callback 回调函数，接收deltaTime参数
- 	* @returns 用于移除回调的函数
+	  * @param callback 回调函数，接收deltaTime参数
+	  * @returns 用于移除回调的函数
 	*/
-	public addAnimationCallback(callback: (delta: number,elapsedtime:number) => void): () => void {
+	public addAnimationCallback(callback: (delta: number, elapsedtime: number) => void): () => void {
 		this._animationCallbacks.add(callback);
 		return () => this._animationCallbacks.delete(callback);
 	}
@@ -457,11 +451,11 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	// }
 	private animate() {
 		const delta = this._clock.getDelta();
-		const elapsedtime  = this._clock.getElapsedTime()
-		
+		const elapsedtime = this._clock.getElapsedTime()
+
 		// 执行所有注册的回调
-		this._animationCallbacks.forEach(cb => cb(delta,elapsedtime));
-		
+		this._animationCallbacks.forEach(cb => cb(delta, elapsedtime));
+
 		this.controls.update();
 		this.renderer.render(this.scene, this.camera);
 		teweenUpdate();

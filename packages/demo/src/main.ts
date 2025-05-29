@@ -44,7 +44,7 @@ function initMap(id: string, options: any) {
 }
 
 function main() {
-	
+
 
 	initMap("#map", {
 		// (86.95, 27.98
@@ -53,10 +53,15 @@ function main() {
 			antialias: true,
 			// 图片顺序对着的夜空1（有山） -------
 			skybox: {
-				path: "./image/skyboxall/SkyBox8/",
-				files: ["back.jpg", "front.jpg", "down.jpg", "top.jpg", "right.jpg", "left.jpg"],
-				defaultColor: '#121E3A'
+				// path: "./image/skyboxall/SkyBox8/",
+				// files: ["back.jpg", "front.jpg", "down.jpg", "top.jpg", "right.jpg", "left.jpg"],
+				// defaultColor: '#121E3A'
+
+				hdr: './image/hdr/kloofendal_48d_partly_cloudy_puresky_2k.hdr',
+				hdrExposure: 1.5,
+				defaultColor: '#CBD0D7'
 			},
+
 			cloudsparams: {
 				enabled: true,
 				texture: './image/cloud.png'
@@ -66,21 +71,21 @@ function main() {
 		meshmap: {
 			// 切片数据源
 			imgSource: [
-				// new terra.TDTSource({
-				// 	style: "vec_w",
-				// 	token: "baa4de006b9c36080686fb99885177a9",
-				// 	url: `https://t1.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
-				// }),
+				new terra.TDTSource({
+					style: "img_w",
+					token: "baa4de006b9c36080686fb99885177a9",
+					// url: `https://t1.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
+				}),
 				// new terra.TDTSource({
 				// 	style: "cia_w",
 				// 	token: "baa4de006b9c36080686fb99885177a9",
 				// 	url: `https://t1.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${tdttk}`
 				// }),
-				new terra.MapBoxSource({
-					token: MAPBOXKEY,
-					dataType: "image",
-					style: "mapbox.satellite",
-				}),
+				// new terra.MapBoxSource({
+				// 	token: MAPBOXKEY,
+				// 	dataType: "image",
+				// 	style: "mapbox.satellite",
+				// }),
 				// https://api.mapbox.com/styles/v1/criska/cm2myr6qx001t01pi0sf7estf.html?title=view&access_token=pk.eyJ1IjoiY3Jpc2thIiwiYSI6ImNsOGZjZW5oMzAzMWozbm1sejgxZXBpMnUifQ.6Q2QsN4FXSPxO7XbNDvikw&zoomwheel=true&fresh=true#13.72/30.82036/120.85454/0/64
 				// new terra.WMTSSource({
 				// 	urlTemplate: `http://192.168.88.205:8085/geoserver/zzgis/gwc/service/wmts?layer=zzgis%3Ahdgs_pipe_bs&style=&tilematrixset=EPSG%3A3857&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=EPSG:3857:{z}&TileCol={x}&TileRow={y}&authkey=${authkey}`,
@@ -99,7 +104,7 @@ function main() {
 	addline();
 	addModelBuild();
 	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
-	addCloud();
+	// addCloud();
 	// console.log(vanilla, 'vanilla-------------------');
 }
 
@@ -330,7 +335,7 @@ function loadgeojsonpolygon(url: any, color: any) {
 }
 
 function addCloud() {
-	let cloudsLayer = new terra.CloudsLayer('cloudsLayer',{texture:'./image/cloud.png'});
+	let cloudsLayer = new terra.CloudsLayer('cloudsLayer', { texture: './image/cloud.png' });
 	map.addLayer(cloudsLayer);
 	// console.log(cloudsLayer, 'cloudsLayer-------------------');
 	let cloud = new terra.ICloud({
@@ -345,13 +350,13 @@ function addCloud() {
 		style: {
 			type: 'cloud',
 			hexcolor: '#FFFFFF',
-			growth:15,
-			segments:60,
-			speed:0.1,
-			boundstext:{
-				x:40,
-				y:2,
-				z:20
+			growth: 15,
+			segments: 60,
+			speed: 0.1,
+			boundstext: {
+				x: 40,
+				y: 2,
+				z: 20
 			}
 			// speed: 0.8,
 			// seed: 50,
@@ -361,7 +366,7 @@ function addCloud() {
 	setTimeout(() => {
 		cloud.addTo(cloudsLayer);
 	}, 1000);
-	
+
 
 	console.log(map.viewer.scene, 'cloud-------------------');
 	// console.log(cloud, 'cloud-------------------');
