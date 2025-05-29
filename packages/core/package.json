@@ -34,7 +34,7 @@
 		"build": "tsc && vite build"
 	},
 	"peerDependencies": {
-		"three": "^0.165.0"
+		"three": "^0.171.0"
 	},
 	"publishConfig": {
 		"registry": "https://registry.npmjs.org/",
@@ -42,8 +42,14 @@
 	},
 	"dependencies": {
 		"@pmndrs/vanilla": "^1.20.4",
+		"@takram/three-atmosphere": "^0.11.2",
+		"@takram/three-clouds": "^0.2.2",
+		"@takram/three-geospatial": "^0.2.1",
+		"@takram/three-geospatial-effects": "^0.3.1",
 		"@types/earcut": "^3.0.0",
 		"@types/geojson": "^7946.0.16",
-		"earcut": "^3.0.1"
+		"earcut": "^3.0.1",
+		"postprocessing": "^6.37.3",
+		"three-stdlib": "^2.36.0"
 	}
 }
