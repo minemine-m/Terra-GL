@@ -5,6 +5,7 @@ console.log(
     'color:rgb(255, 255, 255); font-weight: bold; background: linear-gradient(90deg, #ffb6c1, #ff69b4); padding: 5px; border-radius: 5px;'
   );
 
+import  './map/Map.DomEvent';
 export * from "./viewer";
 export * from "./map";
 export * from "./tilesystem/imageTileSource";

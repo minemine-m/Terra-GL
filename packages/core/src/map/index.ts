@@ -5,9 +5,10 @@ import { Coordinate } from "../types";
 import { requireParam, requireProp } from "../utils/validate";
 import { BaseMixin, EventMixin } from "../core/mixins";
 import { Layer } from "../layer/Layer";
-import { isNil } from "../utils";
+import { isNil, formatYYMMDDHHmmss } from "../utils";
 import { LayerContainer } from "../layer/LayerContainer";
 import { _createModel } from '../utils/createobject';
+
 // import { CameraHelper } from "three";
 // import { DirectionalLightHelper } from "three";
 
@@ -17,6 +18,16 @@ type MapOptions = {
     meshmap: TileMapParams;
     center: Coordinate;  // center 是必填项
 };
+
+// 事件类型
+interface EventMap {
+    // 格式: [事件名]: 回调参数类型
+    // click: { x: number; y: number };  // 点击事件参数
+    loaded: { timestamp?: any; targrt?:Map; listened?:boolean}; // 加载事件参数
+    // hover: { target: THREE.Object3D }; // 悬停事件参数
+}
+
+
 
 
 
@@ -34,6 +45,13 @@ export class Map extends EventMixin(
     public readonly center: Coordinate;
     public options: Required<MapOptions>;
     private _layerContainer: LayerContainer;
+    private _EventMap: EventMap = {
+        loaded: { listened: false }, // 加载事件参数
+    };
+    // @ts-ignore
+    _onLoadHooks: Array<(...args) => void>;
+    
+
     constructor(
         container: HTMLElement | string,
         options: MapOptions  // 移除了可选标记，强制要求必须传参数
@@ -62,26 +80,13 @@ export class Map extends EventMixin(
 
         this.center = this.options.center;
         this.viewer = new Viewer(container, this.options.viewer);
+        // this.setDomContainer(this.viewer.container as HTMLElement);
         this.tilemap = this.initTileMap(this.options.meshmap);
         // 默认开启阴影
         // 开启阴影
         this.tilemap.receiveShadow = true;
         // 地图添加到场景
         this.viewer.scene.add(this.tilemap);
-
-        // this.tilemap = this.initTileMap(this.options.meshmap);
-
-        // this.viewer.scene.add(this.tilemap);
-        // this.viewer.scene.add(this.tilemap);
-        // this.viewer.scene.add(this.tilemap);
-        // this.tilemap.castShadow = true;
-
-        // console.log(this.tilemap, ' this.tilemap - ---------------- ')
-        // this.viewer.renderer.shadowMap.enabled = true;
-        // this.viewer.renderer.shadowMap.type = PCFSoftShadowMap;
-
-
-        // 直接定位到中心点
         // 地图中心经纬度高度（m）转为世界坐标
 
 
@@ -132,6 +137,9 @@ export class Map extends EventMixin(
         this.viewer.dirLight.name = '平行光';
         this.viewer.dirLight.intensity = 3;
 
+
+
+        this._callOnLoadHooks();
         // console.log(this.viewer.dirLight, 'this.viewer.dirLight ----------------------')
 
         // const shadowCameraHelper = new CameraHelper(this.viewer.dirLight.shadow.camera);
@@ -147,6 +155,48 @@ export class Map extends EventMixin(
         // const lightHelper = new DirectionalLightHelper(this.viewer.dirLight, 5);
         // this.viewer.scene.add(lightHelper);
     }
+
+    
+
+    static addOnLoadHook(
+        fn: string | ((this: Map, ...args: any[]) => void),
+        ...args: any[]
+    ): typeof Map {
+        const onload = typeof fn === 'function'
+            ? fn
+            : function (this: Map) {
+                (this as any)[fn].apply(this, args);
+            };
+
+        const proto = (this as typeof Map).prototype as {
+            _onLoadHooks?: Array<(...args: any[]) => void>;
+        };
+
+        proto._onLoadHooks = proto._onLoadHooks || [];
+        proto._onLoadHooks.push(onload);
+        return this;
+    }
+
+    // setDomContainer(container: HTMLElement): this {
+    //     return super.setDomContainer(container);
+    // }
+
+    /* eslint no-extend-native: 0 */
+    //@internal
+    _callOnLoadHooks() {
+        debugger
+        const proto = Map.prototype;
+        if (!proto._onLoadHooks) {
+            return;
+        }
+        for (let i = 0, l = proto._onLoadHooks.length; i < l; i++) {
+            proto._onLoadHooks[i].call(this);
+        }
+    }
+
+    
+
+  
 
 
     /**
@@ -169,10 +219,15 @@ export class Map extends EventMixin(
 
         // 地图准备就绪
         tilemap.addEventListener("ready", () => {
-            this.trigger("loaded", {
-                timestamp: Date.now(),
-                map: this
-            });
+            const eventData: EventMap["loaded"] = {
+                timestamp: formatYYMMDDHHmmss(),
+                targrt: this
+            };
+            this._EventMap["loaded"] = {
+                listened: true
+            }
+            this.trigger("loaded", eventData);
+
         });
         return tilemap;
     }

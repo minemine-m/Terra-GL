@@ -38,6 +38,16 @@ function initMap(id: string, options: any) {
 		console.log("地图初始化完成 --- 简单的事件", eventData);
 	});
 
+	map.on('pointermove', (evt: any) => {
+		console.log('收到 DOM 事件:', evt);
+	});
+	
+
+	map.on('pointermove', (evt: any) => {
+		console.log('收到 DOM 事件2222:', evt);
+	});
+
+
 	// let layer = new terra.Layer({
 	// 	visible: true,
 	// });

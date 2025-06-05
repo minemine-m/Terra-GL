@@ -11,6 +11,7 @@ export function EventMixin<T extends { new(...args: any[]): {} }>(Base: T) {
         on = this.eventClass.on.bind(this.eventClass);
         trigger = this.eventClass.trigger.bind(this.eventClass);
         off = this.eventClass.off.bind(this.eventClass);
+        // setDomContainer = this.eventClass.setDomContainer.bind(this.eventClass);
     };
 }
 
