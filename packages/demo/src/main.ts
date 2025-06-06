@@ -33,16 +33,18 @@ function initMap(id: string, options: any) {
 	// 	console.log("地图初始化完成 --- 简单的事件", eventData);
 	// });
 
-	// 监听 playerJump 事件
-	map.on('loaded', (eventData: any) => {
-		console.log("地图初始化完成 --- 简单的事件", eventData);
-	});
+	function mousermovefun(eventData: any) {
+		console.log("鼠标移动事件", eventData);
+	}
+	// // 监听 playerJump 事件
+	// map.on('loaded', mousermovefun);
 
-	// map.on('mousemove', (evt: any) => {
-	// 	console.log('点击事件', evt);
-	// });
+	map.on('mousemove', mousermovefun);
 	
-
+	setTimeout(() => {
+		alert('移除监听');
+		map.off('mousemove', mousermovefun);
+	}, 20000);
 	
 	
 	// map.on('pointermove', (evt: any) => {

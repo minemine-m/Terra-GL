@@ -36,14 +36,24 @@ import { EventDispatcher } from 'three';
 
 export class EventClass {
   private _dispatcher = new EventDispatcher();
+  // 存储监听器映射 { 类型: { 原始监听器: 包装函数 } }
+  private _listenerMap = new Map<string, Map<Function, Function>>();
 
-  // 完全绕过类型检查的版本
   on(type: string, listener: (data?: any) => void): this {
-    (this._dispatcher as any).addEventListener(type, (e: any) => {
-      listener(e.data || e);
-    });
+    // 创建包装函数
+    const wrapper = (e: any) => listener(e.data || e);
+    
+    // 存储原始监听器和包装函数的映射
+    if (!this._listenerMap.has(type)) {
+      this._listenerMap.set(type, new Map());
+    }
+    this._listenerMap.get(type)!.set(listener, wrapper);
+    
+    // 添加包装函数到事件分发器
+    (this._dispatcher as any).addEventListener(type, wrapper);
     return this;
   }
+
 
   once(type: string, listener: (data?: any) => void): this {
     const wrapper = (e: any) => {
@@ -54,7 +64,20 @@ export class EventClass {
   }
 
   off(type: string, listener: (...args: any[]) => void): this {
-    (this._dispatcher as any).removeEventListener(type, listener);
+    const wrappers = this._listenerMap.get(type);
+    if (!wrappers) return this;
+
+    const wrapper = wrappers.get(listener);
+    if (wrapper) {
+      // 移除实际的包装函数
+      (this._dispatcher as any).removeEventListener(type, wrapper);
+      wrappers.delete(listener);
+      
+      // 清理空类型
+      if (wrappers.size === 0) {
+        this._listenerMap.delete(type);
+      }
+    }
     return this;
   }
 
