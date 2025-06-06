@@ -4,10 +4,14 @@ import { getLocalFromMouse } from '../utils/tilemaputils';
 
 interface DomEventMap {
     // 格式: [事件名]: 回调参数类型
-    targrt?: Map; 
-    originEvent: Event;
-    coordiante?: Coordinate;
-    eventName?: string; // 鼠标事件对象，如 click、mouseover 等
+    targrt?: Map;  // 触发事件的目标对象
+    originEvent: Event; // 原始的dom事件对象
+    coordiante?: Coordinate; // 事件的坐标
+    eventName?: string; // 事件名称
+    screenXY: {
+        X: number; // 屏幕X坐标
+        Y: number; // 屏幕Y坐标
+    }; // 场景对象
 
 }
 
@@ -54,6 +58,10 @@ Map.prototype._registerDomEvents = function (this: Map) {
                     targrt: this,
                     originEvent: evt,
                     eventName: eventName,
+                    screenXY: {
+                        X: evt.screenX,
+                        Y: evt.screenY,
+                    }
 
                 };
                 if(latlnt) {
@@ -63,6 +71,10 @@ Map.prototype._registerDomEvents = function (this: Map) {
                         originEvent: evt,
                         coordiante: coordiante,
                         eventName: eventName,
+                        screenXY: {
+                            X: evt.screenX,
+                            Y: evt.screenY,
+                        }
                     }
                     
                 }
