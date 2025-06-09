@@ -35,6 +35,44 @@ export interface IconPointStyle extends BaseStyle {
     sizeAttenuation?: boolean;
 }
 
+export interface LabelStyle extends BaseStyle {
+    type: 'canvas-label';
+    text: string; // 文本内容
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: 'normal' | 'bold' | 'bolder' | 'lighter' | number;
+    fontStyle?: 'normal' | 'italic' | 'oblique';
+    
+    // 文字样式
+    textColor?: string;
+    strokeColor?: string;       // 文字描边颜色
+    strokeWidth?: number;       // 文字描边宽度（像素）
+    
+    // 背景控制
+    showBackground?: boolean;   // 是否显示背景
+    bgStyle?: 1 | 2;           // 1: 圆角矩形, 2: 气泡样式
+    bgColor?: string;
+    bgOpacity?: number;        // 背景透明度 0-1
+    
+    // 阴影效果
+    shadowColor?: string;
+    shadowBlur?: number;
+    shadowOffsetX?: number;
+    shadowOffsetY?: number;
+    
+    // 圆角矩形配置
+    roundRectRadius?: number;
+    
+    // 气泡样式配置
+    bubblePointerHeight?: number;
+    bubblePointerWidth?: number;
+    bubbleBorderColor?: string;
+    bubbleBorderWidth?: number;
+    
+    // 尺寸控制
+    fixedSize?: number;         // 固定显示大小（世界单位）
+}
+
 // 定义基础多边形样式接口
 export interface BasePolygonStyle extends BaseStyle {
     type: 'basic-polygon';
@@ -190,7 +228,7 @@ type CloudProps = {
     /** ​ 颜色，默认: 白色 */
     color?: Color,
     hexcolor?: string,
-    boundstext?: { x: number ; y: number ; z: number  }
+    boundstext?: { x: number; y: number; z: number }
 }
 
 
@@ -207,7 +245,7 @@ export interface CustomStyle extends BaseStyle {
     build: () => Object3D | Promise<Object3D>;
 }
 
-export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle | CloudStyle | BaseWaterStyle;
+export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle | CloudStyle | BaseWaterStyle | LabelStyle;
 export type StyleInput = StyleConfig | Style;
 
 // 2. 样式主类 ==============================================
@@ -245,6 +283,8 @@ export class Style {
                     return this._applyWaterStyle(object);
                 case 'cloud':
                     return this._applyCloudStyle(object);
+                case 'canvas-label':
+                    return this._applyTextSpriteStyle(object);
                 case 'custom':
                     return this._applyCustomStyle(object);
                 default:
@@ -363,16 +403,16 @@ export class Style {
     private _applyPolygonStyle(object: Object3D) {
         // @ts-ignore
         const config = this.config as BasePolygonStyle;
-        
+
         return true
     }
-  // @ts-ignore
+    // @ts-ignore
     private _applyExtrudeStyle(object: Object3D) {
         // @ts-ignore
         const config = this.config as ExtrudeStyle;
         return true
     }
-  // @ts-ignore
+    // @ts-ignore
     private _applyWaterStyle(object: Object3D) {
         const config = this.config as WaterStyle;
 
@@ -388,19 +428,28 @@ export class Style {
     }
 
 
-  // @ts-ignore
+    // @ts-ignore
     private _applyCloudStyle(object: Object3D) {
-      // @ts-ignore
+        // @ts-ignore
         const config = this.config as CloudStyle;
+        return true
+    }
+
+    // @ts-ignore
+    private _applyTextSpriteStyle(object: Object3D) {
+        // @ts-ignore
+        const config = this.config as LabelStyle;
         return true
     }
 
 
 
 
-      // @ts-ignore
+
+
+    // @ts-ignore
     private async _applyModelStyle(object: Object3D) {
-          // @ts-ignore
+        // @ts-ignore
         const config = this.config as ModelStyle;
         return true
 

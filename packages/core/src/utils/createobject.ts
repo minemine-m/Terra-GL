@@ -1,9 +1,9 @@
-import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial } from 'three';
-import { Line2,LineMaterial,LineGeometry,Water } from 'three-stdlib';
+import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial,CanvasTexture } from 'three';
+import { Line2, LineMaterial, LineGeometry, Water } from 'three-stdlib';
 import { ModelLoader } from '../loaders/ModelLoader';
 import { Map } from '../map';
-import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, Style } from '../style';
-import {  Cloud as vanillaCloud} from "@pmndrs/vanilla";
+import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, LabelStyle, Style } from '../style';
+import { Cloud as vanillaCloud } from "@pmndrs/vanilla";
 
 // import earcut from 'earcut'; // 导入 earcut 库
 
@@ -447,26 +447,249 @@ export function _createClouds(
     // clouds.add(cloud)
     // let vanillacloudfonfig = config;
     config.color = new Color(config.hexcolor);
-    if(config.boundstext) {
+    if (config.boundstext) {
         config.bounds = new Vector3(config.boundstext.x, config.boundstext.y, config.boundstext.z); // 调整云的大小
         // config.scale = new Vector3(1, 0.01, 1); // 调整云的大小
     }
-  
+
     // console.log('---------------云朵样式', config)
-   
+
     const cloud = new vanillaCloud(config);
     cloud.castShadow = true; // 允许云投射阴影
     cloud.scale.setScalar(50);
-    
+
     cloud.position.copy(positions);
-    
+
     // clouds.add(cloud)
     return cloud;
 }
 
 
+// 添加 canvas的文字标注
+export async function _createTextSprite(config: LabelStyle, positions: Vector3): Promise<Sprite> {
+    // 默认配置
+    const textStyleConfig = {
+        fontSize: 48,
+        fontFamily: "'Microsoft YaHei', sans-serif",
+        fontWeight: 'bold',
+        fontStyle: 'normal',
+        textColor: '#ffffff',
+        strokeColor: '#000000',    // 文字描边颜色
+        strokeWidth: 2,            // 文字描边宽度
+        showBackground: true,      // 是否显示背景框
+        bgStyle: 1,                // 背景样式：1=圆角矩形，2=气泡
+        bgColor: '#3498db',
+        bgOpacity: 0.8,            // 背景透明度
+        shadowColor: 'rgba(0, 0, 0, 0.5)',
+        shadowBlur: 5,
+        shadowOffsetX: 3,
+        shadowOffsetY: 3,
+        roundRectRadius: 20,
+        bubblePointerHeight: 10,
+        bubblePointerWidth: 15,
+        bubbleBorderColor: '#ffffff',
+        bubbleBorderWidth: 3,
+        fixedSize: 50,             // 固定大小值（世界坐标单位）
+    };
+
+    // 合并配置
+    const finalConfig = { ...textStyleConfig, ...config };
+    finalConfig.fontSize = Math.min(Math.max(finalConfig.fontSize, 8), 128);
+
+    // 创建canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas context is null');
+
+    // 设置字体和计算尺寸
+    const fontString = `${finalConfig.fontStyle} ${finalConfig.fontWeight} ${finalConfig.fontSize}px ${finalConfig.fontFamily}`;
+    ctx.font = fontString;
+
+    const padding = finalConfig.showBackground ? 20 : 0;
+    const minWidth = 100;
+    const minHeight = 50;
+    
+    const textMetrics = ctx.measureText(finalConfig.text);
+    const textWidth = Math.max(minWidth, textMetrics.width + padding * 2);
+    const textHeight = Math.max(minHeight, finalConfig.fontSize * 1.5 + padding * 2);
+
+    canvas.width = Math.min(textWidth, 2048);
+    canvas.height = Math.min(textHeight, 2048);
+
+    // 重新设置上下文
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = fontString;
+
+    // 绘制背景（如果启用）
+    if (finalConfig.showBackground) {
+        if (finalConfig.bgStyle === 1) {
+            // 圆角矩形背景
+            ctx.fillStyle = finalConfig.bgColor;
+            ctx.globalAlpha = finalConfig.bgOpacity;
+            ctx.beginPath();
+            roundRect(ctx, padding/2, padding/2, canvas.width - padding, canvas.height - padding, finalConfig.roundRectRadius);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // 阴影效果
+            ctx.shadowColor = finalConfig.shadowColor;
+            ctx.shadowBlur = finalConfig.shadowBlur;
+            ctx.shadowOffsetX = finalConfig.shadowOffsetX;
+            ctx.shadowOffsetY = finalConfig.shadowOffsetY;
+        } else {
+            // 气泡背景
+            ctx.fillStyle = finalConfig.bgColor;
+            ctx.globalAlpha = finalConfig.bgOpacity;
+            ctx.beginPath();
+            drawSpeechBubble(
+                ctx,
+                canvas.width / 2,
+                canvas.height / 2,
+                canvas.width * 0.8,
+                canvas.height * 0.8,
+                finalConfig.roundRectRadius,
+                finalConfig.bubblePointerHeight,
+                finalConfig.bubblePointerWidth
+            );
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // 气泡边框
+            ctx.strokeStyle = finalConfig.bubbleBorderColor;
+            ctx.lineWidth = finalConfig.bubbleBorderWidth;
+            ctx.stroke();
+        }
+    }
+
+    // 绘制文字（带描边）
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 先绘制描边
+    if (finalConfig.strokeWidth > 0) {
+        ctx.strokeStyle = finalConfig.strokeColor;
+        ctx.lineWidth = finalConfig.strokeWidth;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(finalConfig.text, canvas.width / 2, canvas.height / 2);
+    }
+    
+    // 再绘制填充文字
+    ctx.fillStyle = finalConfig.textColor;
+    ctx.fillText(finalConfig.text, canvas.width / 2, canvas.height / 2);
+    
+    // 重置阴影
+    ctx.shadowColor = 'transparent';
+
+    // 创建sprite
+    const texture = new CanvasTexture(canvas);
+    const material = new SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        fog: false
+    });
+
+    const sprite = new Sprite(material);
+    
+    // 设置固定大小
+    const fixedScale = finalConfig.fixedSize;
+    sprite.scale.set(
+        canvas.width * fixedScale / 100,
+        canvas.height * fixedScale / 100,
+        1
+    );
+
+    if (positions) {
+        sprite.position.copy(positions);
+    }
+    
+    sprite.renderOrder = 9999;
+    
+    return sprite;
+}
+
+function roundRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+): void {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
 
 
+function drawSpeechBubble(
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    width: number,
+    height: number,
+    radius: number,
+    pointerHeight?: number,
+    pointerWidth?: number
+): void {
+    // 参数验证
+    if (width <= 0) throw new Error("Width must be positive");
+    if (height <= 0) throw new Error("Height must be positive");
+    if (radius < 0) throw new Error("Radius cannot be negative");
+    
+    const bubbleWidth = width;
+    const bubbleHeight = height;
+    const bubbleRadius = Math.min(radius, width / 2, height / 2); // 确保半径不超过宽度/高度的一半
+    const pointerHeightValue = pointerHeight ?? 10;
+    const pointerWidthValue = pointerWidth ?? 15;
+
+    ctx.beginPath();
+    
+    // 开始点：左上角+圆角
+    ctx.moveTo(cx - bubbleWidth/2 + bubbleRadius, cy - bubbleHeight/2);
+
+    // 顶部线条
+    ctx.lineTo(cx + bubbleWidth/2 - bubbleRadius, cy - bubbleHeight/2);
+    ctx.quadraticCurveTo(
+        cx + bubbleWidth/2, cy - bubbleHeight/2, 
+        cx + bubbleWidth/2, cy - bubbleHeight/2 + bubbleRadius
+    );
+
+    // 右侧线条
+    ctx.lineTo(cx + bubbleWidth/2, cy + bubbleHeight/2 - bubbleRadius);
+    ctx.quadraticCurveTo(
+        cx + bubbleWidth/2, cy + bubbleHeight/2, 
+        cx + bubbleWidth/2 - bubbleRadius, cy + bubbleHeight/2
+    );
+
+    // 底部线条（指针在底部中间）
+    ctx.lineTo(cx + pointerWidthValue/2, cy + bubbleHeight/2);
+    ctx.lineTo(cx, cy + bubbleHeight/2 + pointerHeightValue);
+    ctx.lineTo(cx - pointerWidthValue/2, cy + bubbleHeight/2);
+    ctx.lineTo(cx - bubbleWidth/2 + bubbleRadius, cy + bubbleHeight/2);
+
+    // 左侧线条
+    ctx.quadraticCurveTo(
+        cx - bubbleWidth/2, cy + bubbleHeight/2, 
+        cx - bubbleWidth/2, cy + bubbleHeight/2 - bubbleRadius
+    );
+    ctx.lineTo(cx - bubbleWidth/2, cy - bubbleHeight/2 + bubbleRadius);
+    ctx.quadraticCurveTo(
+        cx - bubbleWidth/2, cy - bubbleHeight/2, 
+        cx - bubbleWidth/2 + bubbleRadius, cy - bubbleHeight/2
+    );
+    
+    ctx.closePath();
+}
 
 
 

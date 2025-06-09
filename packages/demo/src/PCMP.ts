@@ -121,10 +121,6 @@ function main() {
 	addCloud();
 	// loadEqu();
 	// console.log(vanilla, 'vanilla-------------------');
-	// setTimeout(() => {
-	loadgeojsonLabel('/geojson/public.gsss_fireplug.json', 'labellayer')
-	// }, 2000);
-
 }
 
 
@@ -409,55 +405,6 @@ function loadgeojsonpoint(url: any, icon: any, layername?: any) {
 						sizeAttenuation: false
 
 
-					}
-					// style: {
-					// 	type: 'basic-point',
-					// 	color: '#FF0000',
-					// 	size: 10,
-
-					// }
-					// feature.setStyle({
-					// 	type: 'basic-point',
-					// 	color: '#0B31A0',
-					// 	size: 50
-					// })
-				})
-
-				featurepoint.addTo(pointLayer);
-
-			});
-			console.log(data.features.length, '长度')
-			return data;
-		})
-		.catch(err => {
-			console.error('加载geojson失败:', err);
-		});
-}
-
-
-function loadgeojsonLabel(url: any, layername?: any) {
-	let pointLayer = new terra.PointLayer(layername);
-	map.addLayer(pointLayer);
-	fetch(url)
-		.then(res => res.json())
-		.then(data => {
-			data.features.forEach((feature: any) => {
-				if (feature.geometry && feature.geometry.coordinates) {
-
-					feature.geometry.coordinates = [...feature.geometry.coordinates, 1];
-				}
-				// console.log(feature, 'modified geojson data ------------');
-
-				let featurepoint = new terra.Label({
-					geometry: feature.geometry,
-					style: {
-						type: 'canvas-label',
-						text: feature.properties.lane_way,
-						textColor:'#E5521B',
-						showBackground:false,
-						strokeColor: '#FFFFFF',
-						strokeWidth: 10,
-						fontSize: 24,
 					}
 					// style: {
 					// 	type: 'basic-point',

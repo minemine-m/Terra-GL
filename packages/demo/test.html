@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可配置的文字标注 - Three.js Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        #info h1 {
+            color: #4db8ff;
+            margin-top: 0;
+            border-bottom: 2px solid #4db8ff;
+            padding-bottom: 10px;
+        }
+
+        #instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        #instructions ul {
+            padding-left: 20px;
+        }
+
+        #instructions li {
+            margin-bottom: 8px;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        button {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            min-width: 160px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #864fda, #4c91f8);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .highlight {
+            color: #ffcc00;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+
+        #config-panel {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .config-group {
+            margin-bottom: 15px;
+        }
+
+        .config-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4db8ff;
+        }
+
+        .config-group input,
+        .config-group select {
+            width: 100%;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #4db8ff;
+            background: rgba(0, 30, 60, 0.8);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="info">
+            <h1>可配置的文字标注</h1>
+            <p>这个Demo展示了如何参数化创建Three.js Sprite文字标注。</p>
+            <p><span class="highlight">参数化</span>方式让您可以轻松控制：</p>
+            <ul>
+                <li>字体、字号、颜色</li>
+                <li>阴影效果（颜色、模糊、偏移）</li>
+                <li>背景样式（圆角、气泡）</li>
+                <li>边框、对齐方式等</li>
+            </ul>
+        </div>
+        
+        <div id="config-panel">
+            <div class="config-group">
+                <label for="font-size">字体大小 (px)</label>
+                <input type="number" id="font-size" min="10" max="100" value="48">
+            </div>
+            
+            <div class="config-group">
+                <label for="font-family">字体</label>
+                <select id="font-family">
+                    <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                    <option value="'SimSun', serif">宋体</option>
+                    <option value="'KaiTi', serif">楷体</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                </select>
+            </div>
+            
+            <div class="config-group">
+                <label for="text-style">文本样式</label>
+                <select id="text-style">
+                    <option value="bold normal">普通</option>
+                    <option value="bold" selected>粗体</option>
+                    <option value="italic">斜体</option>
+                </select>
+            </div>
+            
+            <div class="config-group">
+                <label for="label-style">标签样式</label>
+                <select id="label-style">
+                    <option value="1">圆角矩形</option>
+                    <option value="2">气泡样式</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="instructions">
+            <h3>操作指南</h3>
+            <ul>
+                <li>使用面板配置文本样式</li>
+                <li><span class="highlight">鼠标拖拽</span> - 旋转场景</li>
+                <li><span class="highlight">滚轮滑动</span> - 放大缩小</li>
+                <li><span class="highlight">下方按钮</span> - 添加/更新标签</li>
+            </ul>
+        </div>
+
+        <div id="controls">
+            <button id="add-label">添加新标签</button>
+            <button id="update-labels">更新所有标签</button>
+            <button id="change-style">切换标签样式</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Three.js核心组件
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111133);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // 设置相机位置
+        camera.position.z = 25;
+        camera.position.y = 8;
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        // 创建点光源
+        const pointLight = new THREE.PointLight(0x00aaff, 2, 50);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+
+        // 添加坐标轴和网格辅助
+        const gridHelper = new THREE.GridHelper(50, 25, 0x444477, 0x222244);
+        scene.add(gridHelper);
+
+        const axesHelper = new THREE.AxesHelper(20);
+        scene.add(axesHelper);
+
+        // 生成随机建筑物
+        const buildingTypes = ['商业区', '住宅楼', '写字楼', '商场', '医院', '学校'];
+        const buildingColors = [0x3498db, 0xe74c3c, 0x2ecc71, 0xf39c12, 0x9b59b6, 0x1abc9c];
+        
+        // 当前文字样式配置
+        let textStyleConfig = {
+            fontSize: 48,
+            fontFamily: "'Microsoft YaHei', sans-serif",
+            fontWeight: 'bold',
+            fontStyle: 'normal',
+            bgStyle: 1,
+            textColor: '#ffffff',
+            bgColor: '#3498db',
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+            shadowBlur: 5,
+            shadowOffsetX: 3,
+            shadowOffsetY: 3,
+            roundRectRadius: 20,
+            bubblePointerHeight: 10,
+            bubblePointerWidth: 15,
+            bubbleBorderColor: '#ffffff',
+            bubbleBorderWidth: 3
+        };
+
+        // 存储标签的数组
+        const textLabels = [];
+
+        // 创建文本精灵的可配置函数
+        function createTextSprite(text, position, config = {}) {
+            // 合并默认配置和传入的配置
+            const finalConfig = { ...textStyleConfig, ...config };
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置字体字符串
+            const fontString = `${finalConfig.fontStyle} ${finalConfig.fontWeight} ${finalConfig.fontSize}px ${finalConfig.fontFamily}`;
+            ctx.font = fontString;
+            
+            // 动态设置canvas尺寸
+            const padding = 5;
+            const minWidth = 200;
+            const minHeight = 70;
+            
+            const textWidth = Math.max(minWidth, ctx.measureText(text).width + finalConfig.fontSize);
+            const textHeight = Math.max(minHeight, finalConfig.fontSize * 1.5);
+            
+            canvas.width = textWidth + padding * 2;
+            canvas.height = textHeight + padding * 2;
+
+            // 重新设置上下文
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = fontString;
+
+            // 绘制背景
+            if (finalConfig.bgStyle === 1) {
+                // 样式1: 圆角矩形背景
+                ctx.fillStyle = finalConfig.bgColor;
+                ctx.beginPath();
+                roundRect(ctx, padding, padding, canvas.width - padding * 2, canvas.height - padding * 2, finalConfig.roundRectRadius);
+                ctx.fill();
+                
+                // 文字阴影
+                ctx.shadowColor = finalConfig.shadowColor;
+                ctx.shadowBlur = finalConfig.shadowBlur;
+                ctx.shadowOffsetX = finalConfig.shadowOffsetX;
+                ctx.shadowOffsetY = finalConfig.shadowOffsetY;
+            } else {
+                // 样式2: 气泡效果
+                ctx.fillStyle = finalConfig.bgColor;
+                ctx.beginPath();
+                drawSpeechBubble(
+                    ctx, 
+                    canvas.width / 2, 
+                    canvas.height / 2, 
+                    canvas.width * 0.8, 
+                    canvas.height * 0.8, 
+                    finalConfig.roundRectRadius,
+                    finalConfig.bubblePointerHeight,
+                    finalConfig.bubblePointerWidth
+                );
+                ctx.fill();
+                
+                // 边框
+                ctx.strokeStyle = finalConfig.bubbleBorderColor;
+                ctx.lineWidth = finalConfig.bubbleBorderWidth;
+                ctx.stroke();
+            }
+
+            // 绘制文字
+            ctx.fillStyle = finalConfig.textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            // 重置阴影
+            ctx.shadowColor = 'transparent';
+
+            // 创建纹理和sprite材质
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            });
+
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(textWidth * 0.015, textHeight * 0.015, 1);
+            
+            // 设置位置
+            if (position) {
+                sprite.position.copy(position);
+            }
+            
+            return sprite;
+        }
+
+        // 工具函数：绘制圆角矩形
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        // 工具函数：绘制对话气泡
+        function drawSpeechBubble(ctx, cx, cy, width, height, radius, pointerHeight, pointerWidth) {
+            const bubbleWidth = width;
+            const bubbleHeight = height;
+            const bubbleRadius = radius;
+            const pointerHeightValue = pointerHeight || 10;
+            const pointerWidthValue = pointerWidth || 15;
+
+            ctx.beginPath();
+            ctx.moveTo(cx - bubbleWidth/2 + bubbleRadius, cy - bubbleHeight/2);
+
+            // 顶部线条
+            ctx.lineTo(cx + bubbleWidth/2 - bubbleRadius, cy - bubbleHeight/2);
+            ctx.quadraticCurveTo(
+                cx + bubbleWidth/2, cy - bubbleHeight/2, 
+                cx + bubbleWidth/2, cy - bubbleHeight/2 + bubbleRadius
+            );
+
+            // 右侧线条
+            ctx.lineTo(cx + bubbleWidth/2, cy + bubbleHeight/2 - bubbleRadius);
+            ctx.quadraticCurveTo(
+                cx + bubbleWidth/2, cy + bubbleHeight/2, 
+                cx + bubbleWidth/2 - bubbleRadius, cy + bubbleHeight/2
+            );
+
+            // 底部线条（指针在底部中间）
+            ctx.lineTo(cx + pointerWidthValue/2, cy + bubbleHeight/2);
+            ctx.lineTo(cx, cy + bubbleHeight/2 + pointerHeightValue);
+            ctx.lineTo(cx - pointerWidthValue/2, cy + bubbleHeight/2);
+            ctx.lineTo(cx - bubbleWidth/2 + bubbleRadius, cy + bubbleHeight/2);
+
+            // 左侧线条
+            ctx.quadraticCurveTo(
+                cx - bubbleWidth/2, cy + bubbleHeight/2, 
+                cx - bubbleWidth/2, cy + bubbleHeight/2 - bubbleRadius
+            );
+            ctx.lineTo(cx - bubbleWidth/2, cy - bubbleHeight/2 + bubbleRadius);
+            ctx.quadraticCurveTo(
+                cx - bubbleWidth/2, cy - bubbleHeight/2, 
+                cx - bubbleWidth/2 + bubbleRadius, cy - bubbleHeight/2
+            );
+            ctx.closePath();
+        }
+
+        // 创建建筑物函数
+        function createBuilding(x, z, color, type) {
+            const height = 4 + Math.random() * 8;
+            const width = 2 + Math.random() * 4;
+            const depth = 2 + Math.random() * 4;
+
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                shininess: 30,
+                specular: 0x555555,
+                emissive: color,
+                emissiveIntensity: 0.1
+            });
+
+            const building = new THREE.Mesh(geometry, material);
+            building.position.set(x, height / 2, z);
+            building.castShadow = true;
+            building.receiveShadow = true;
+
+            // 为每个建筑物添加顶部灯光
+            const topLight = new THREE.PointLight(0xffffaa, 0.8, 5);
+            topLight.position.set(x, height + 0.5, z);
+            scene.add(topLight);
+
+            // 添加标签
+            const position = new THREE.Vector3(x, height + 3, z);
+            const bgColor = `rgba(${color >> 16 & 255}, ${color >> 8 & 255}, ${color & 255}, 0.85)`;
+            
+            const label = createTextSprite(
+                type, 
+                position, 
+                { 
+                    bgColor: bgColor 
+                }
+            );
+            
+            scene.add(label);
+            textLabels.push(label);
+
+            scene.add(building);
+
+            return building;
+        }
+
+        // 创建城市中心建筑
+        function createCentralBuilding() {
+            const geometry = new THREE.CylinderGeometry(8, 10, 25, 16);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xe74c3c,
+                shininess: 80,
+                specular: 0x222222,
+                emissive: 0xe74c3c,
+                emissiveIntensity: 0.2
+            });
+
+            const building = new THREE.Mesh(geometry, material);
+            building.position.set(0, 12.5, 0);
+            building.castShadow = true;
+            building.receiveShadow = true;
+            scene.add(building);
+
+            // 添加中央建筑的特效灯光
+            const spotLight = new THREE.SpotLight(0xff4444, 5, 0, Math.PI / 8, 0.5);
+            spotLight.position.set(0, 35, 0);
+            spotLight.target.position.set(0, 0, 0);
+            scene.add(spotLight);
+            scene.add(spotLight.target);
+
+            // 添加中心建筑标签
+            const position = new THREE.Vector3(0, 27, 0);
+            const label = createTextSprite(
+                "城市中心", 
+                position, 
+                {
+                    bgColor: 'rgba(231, 76, 60, 0.9)',
+                    fontSize: 54
+                }
+            );
+            
+            scene.add(label);
+            textLabels.push(label);
+
+            return building;
+        }
+
+        // 初始化场景
+        function initScene() {
+            for (let i = 0; i < 30; i++) {
+                const typeIndex = Math.floor(Math.random() * buildingTypes.length);
+                const buildingType = buildingTypes[typeIndex];
+                const color = buildingColors[typeIndex];
+                
+                // 随机位置
+                const x = (Math.random() - 0.5) * 40;
+                const z = (Math.random() - 0.5) * 40;
+                
+                createBuilding(x, z, color, buildingType);
+            }
+            
+            createCentralBuilding();
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 简单旋转场景
+            scene.rotation.y += 0.001;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 相机控制
+        let isDragging = false;
+        let previousMousePosition = {
+            x: 0,
+            y: 0
+        };
+
+        function onMouseDown() {
+            isDragging = true;
+        }
+
+        function onMouseMove(event) {
+            const deltaMove = {
+                x: event.clientX - previousMousePosition.x,
+                y: event.clientY - previousMousePosition.y
+            };
+
+            if (isDragging) {
+                const rotationSpeed = 0.002;
+                camera.position.x -= deltaMove.x * rotationSpeed * 3;
+                camera.position.y += deltaMove.y * rotationSpeed * 3;
+
+                // 约束相机高度
+                camera.position.y = Math.max(5, Math.min(30, camera.position.y));
+            }
+
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        function onMouseWheel(event) {
+            // 使用滚轮控制相机距离
+            camera.position.z += event.deltaY * 0.05;
+            camera.position.z = Math.max(15, Math.min(40, camera.position.z));
+        }
+
+        // 更新配置参数
+        function updateConfigFromUI() {
+            textStyleConfig.fontSize = parseInt(document.getElementById('font-size').value);
+            textStyleConfig.fontFamily = document.getElementById('font-family').value;
+            
+            const textStyleValue = document.getElementById('text-style').value;
+            if (textStyleValue === 'bold') {
+                textStyleConfig.fontWeight = 'bold';
+                textStyleConfig.fontStyle = 'normal';
+            } else if (textStyleValue === 'italic') {
+                textStyleConfig.fontWeight = 'normal';
+                textStyleConfig.fontStyle = 'italic';
+            } else {
+                textStyleConfig.fontWeight = 'normal';
+                textStyleConfig.fontStyle = 'normal';
+            }
+            
+            textStyleConfig.bgStyle = parseInt(document.getElementById('label-style').value);
+        }
+
+        // 添加事件监听器
+        window.addEventListener('mousedown', onMouseDown, false);
+        window.addEventListener('mousemove', onMouseMove, false);
+        window.addEventListener('mouseup', onMouseUp, false);
+        window.addEventListener('wheel', onMouseWheel, false);
+
+        // UI控制
+        document.getElementById('update-labels').addEventListener('click', function() {
+            updateConfigFromUI();
+            
+            const time = new Date();
+            const timeStr = `${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+            const labelTexts = ["更新", "刷新", "新文本", "动态标签", "最新"];
+            
+            // 更新所有文本精灵
+            textLabels.forEach(label => {
+                if (label && label.parent) {
+                    const position = label.position.clone();
+                    const text = `${labelTexts[Math.floor(Math.random() * labelTexts.length)]} ${timeStr}`;
+                    
+                    scene.remove(label);
+                    
+                    const newLabel = createTextSprite(text, position);
+                    scene.add(newLabel);
+                    
+                    // 更新数组中的引用
+                    textLabels[textLabels.indexOf(label)] = newLabel;
+                }
+            });
+        });
+
+        document.getElementById('add-label').addEventListener('click', function() {
+            updateConfigFromUI();
+            
+            const labels = ['新标签', '信息点', '标注', '标记', '文本'];
+            const x = (Math.random() - 0.5) * 40;
+            const z = (Math.random() - 0.5) * 40;
+            const buildingColor = buildingColors[Math.floor(Math.random() * buildingColors.length)];
+            const bgColor = `rgba(${buildingColor >> 16 & 255}, ${buildingColor >> 8 & 255}, ${buildingColor & 255}, 0.85)`;
+            const text = labels[Math.floor(Math.random() * labels.length)];
+            
+            const position = new THREE.Vector3(x, 4, z);
+            const newLabel = createTextSprite(
+                text, 
+                position,
+                {
+                    bgColor: bgColor,
+                    fontSize: Math.max(20, Math.min(60, 20 + Math.random() * 40))
+                }
+            );
+            
+            scene.add(newLabel);
+            textLabels.push(newLabel);
+        });
+
+        document.getElementById('change-style').addEventListener('click', function() {
+            textStyleConfig.bgStyle = textStyleConfig.bgStyle === 1 ? 2 : 1;
+            
+            // 更新所有现有标签
+            textLabels.forEach((label, index) => {
+                if (label && label.parent) {
+                    const position = label.position.clone();
+                    const text = label.material.map.image.textContent;
+                    
+                    scene.remove(label);
+                    
+                    const newLabel = createTextSprite(text, position);
+                    scene.add(newLabel);
+                    textLabels[index] = newLabel;
+                }
+            });
+        });
+
+        // 配置面板变化时更新配置
+        document.querySelectorAll('#config-panel input, #config-panel select').forEach(element => {
+            element.addEventListener('change', updateConfigFromUI);
+        });
+
+        // 响应窗口大小变化
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始化场景
+        initScene();
+    </script>
+</body>
+</html>
