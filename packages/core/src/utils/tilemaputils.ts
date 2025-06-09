@@ -1,11 +1,7 @@
 import {
-	BufferGeometry,
 	Camera,
 	MathUtils,
-	Mesh,
-	MeshLambertMaterial,
 	PerspectiveCamera,
-	SphereGeometry,
 	Vector2,
 	Vector3,
 } from "three";

@@ -28,33 +28,6 @@ declare global {
 
 function initMap(id: string, options: any) {
 	map = new terra.Map(id, options);
-	// 监听地图加载事件
-	// map.on("loaded", (eventData: any) => {
-	// 	console.log("地图初始化完成 --- 简单的事件", eventData);
-	// });
-
-	// function mousermovefun(eventData: any) {
-	// 	console.log("鼠标移动事件", eventData);
-	// }
-	// // // 监听 playerJump 事件
-	// // map.on('loaded', mousermovefun);
-
-	// map.on('mousemove', mousermovefun);
-
-	// setTimeout(() => {
-	// 	alert('移除监听');
-	// 	map.off('mousemove', mousermovefun);
-	// }, 20000);
-
-
-	// map.on('pointermove', (evt: any) => {
-	// 	console.log('收到 DOM 事件2222:', evt);
-	// });
-
-
-	// let layer = new terra.Layer({
-	// 	visible: true,
-	// });
 }
 
 function main() {
@@ -119,7 +92,6 @@ function main() {
 	addModelBuild();
 	loadgeojsonpolygon('/geojson/水系.json', '#ccccc');
 	addCloud();
-	loadEqu();
 	// console.log(vanilla, 'vanilla-------------------');
 }
 
@@ -130,58 +102,8 @@ function addline() {
 
 	loadgeojsonpipe('/geojson/public.gsgx_pipe.json', '#0068F8');
 	loadgeojsonpipe('/geojson/public.wsgx_pipe.json', '#f85700');
-	// loadgeojsonpipe('/geojson/public.ysgx_pipe.json', '#057826');
 
 }
-
-
-function loadEqu() {
-
-	let points = [
-		"public.gsbz_pumpstation.json",
-		"public.gssc_wfactory.json",
-		"public.gssc_evalve.json",
-		"public.gssc_fireplug.json",
-		"public.gsss_flowmeter.json",
-		"public.gsss_mainmeter.json",
-		"public.gsss_manhole.json",
-		// "public.gsss_node.json",
-		"public.gsss_riser.json",
-		"public.gsss_valve.json",
-		"public.gsss_waterp.json",
-		"public.gsss_vmeter.json",
-		"public.wsszb_pumpstation.json",
-		"public.wssc_sewagefarm.json",
-		"public.wsss_comb.json",
-		"public.wsss_discharger.json",
-		"public.wsss_infall.json",
-		// "public.wsss_node.json",
-		"public.wsss_outfall.json",
-		"public.wsss_prepro.json",
-		"public.wsss_valve.json",
-		"public.wsss_well.json",
-		"public.ysbz_pumpstation.json",
-		"public.ysqx_pipe.json",
-		"public.ysss_comb.json",
-		"public.ysss_infall.json",
-		// "public.ysss_node.json",
-		"public.ysss_outfall.json",
-		"public.ysss_valve.json",
-		"public.ysss_well.json"
-	]
-
-	for (let i = 0; i < points.length; i++) {
-		const element = points[i];
-		loadgeojsonpoint('/geojson/' + element, '/image/point/fxd.png', element)
-	}
-
-
-
-	// loadgeojsonpoint('/geojson/public.gsss_fireplug.json', '/image/point/供水设施_消防栓.png');
-	// loadgeojsonpoint('/geojson/public.gsss_fireplug.json', '/image/point/供水设施_消防栓.png');
-}
-
-
 
 
 // 加载建筑
@@ -317,6 +239,20 @@ function loadgeojsonpolygon(url: any, color: any) {
 						);
 					}
 				}
+				// console.log(feature, 'modified geojson data ------------');
+
+				// let pipeline = new terra.MultiLineString({
+				// 	"geometry": feature.geometry,
+				// 	style: {
+				// 		type: 'basic-line',
+				// 		color: color,
+				// 		width: 5,
+				// 		// dashArray: [10, 10]
+				// 	}
+				// })
+
+				// pipeline.addTo(lineLayer);
+
 				const water = new terra.Polygon({
 					geometry: feature.geometry,
 					style: {
@@ -331,6 +267,29 @@ function loadgeojsonpolygon(url: any, color: any) {
 				});
 
 				water.addTo(waterpolygonLayer);
+
+
+				// const expolygon = new terra.Polygon({
+				// 	geometry: feature.geometry,
+				// 	style: {
+				// 		type: 'extrude-polygon',
+				// 		color: '#FF44D5',
+				// 		opacity: 0.1,
+				// 		side: 'double',
+				// 		extrude: {
+				// 			height: 1000,          // 拉伸高度
+				// 			bevelEnabled: true  // 启用边缘斜角
+				// 		},
+
+				// 	}
+				// });
+
+				// expolygon.addTo(waterpolygonLayer);
+
+
+
+
+
 			});
 			return data;
 		})
@@ -364,7 +323,7 @@ function addCloud() {
 				y: 2,
 				z: 30
 			},
-			opacity: 0.25
+			opacity:0.25
 			// speed: 0.8,
 			// seed: 50,
 		}
@@ -378,58 +337,6 @@ function addCloud() {
 	console.log(map.viewer.scene, 'cloud-------------------');
 	// console.log(cloud, 'cloud-------------------');
 }
-
-function loadgeojsonpoint(url: any, icon: any, layername?: any) {
-	let pointLayer = new terra.PointLayer(layername);
-	map.addLayer(pointLayer);
-	fetch(url)
-		.then(res => res.json())
-		.then(data => {
-			data.features.forEach((feature: any) => {
-				if (feature.geometry && feature.geometry.coordinates) {
-
-					feature.geometry.coordinates = [...feature.geometry.coordinates, 1];
-				}
-				// console.log(feature, 'modified geojson data ------------');
-
-				let featurepoint = new terra.Maker({
-					geometry: feature.geometry,
-					style: {
-						type: 'icon-point',
-						url: icon,      // 图标路径
-						size: [0.03, 0.03],            // 宽1米，高1.5米
-						// color: 0xFF0000,           // 红色叠加
-						rotation: Math.PI / 4,       // 45度旋转
-						anchor: [0, 0],        // 锚点位置
-						zIndex: 10,               // 显示层级
-						sizeAttenuation: false
-
-
-					}
-					// style: {
-					// 	type: 'basic-point',
-					// 	color: '#FF0000',
-					// 	size: 10,
-
-					// }
-					// feature.setStyle({
-					// 	type: 'basic-point',
-					// 	color: '#0B31A0',
-					// 	size: 50
-					// })
-				})
-
-				featurepoint.addTo(pointLayer);
-
-			});
-			console.log(data.features.length, '长度')
-			return data;
-		})
-		.catch(err => {
-			console.error('加载geojson失败:', err);
-		});
-}
-
 
 main();
 

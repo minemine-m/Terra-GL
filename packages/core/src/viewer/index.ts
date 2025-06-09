@@ -15,9 +15,7 @@ import {
 	CubeTextureLoader,
 	PCFSoftShadowMap,
 	ACESFilmicToneMapping,
-	CubeReflectionMapping,
 	LinearSRGBColorSpace,
-	CubeRefractionMapping,
 	PMREMGenerator,
 	FloatType
 
