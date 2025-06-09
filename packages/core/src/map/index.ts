@@ -8,6 +8,7 @@ import { Layer } from "../layer/Layer";
 import { isNil, formatYYMMDDHHmmss } from "../utils";
 import { LayerContainer } from "../layer/LayerContainer";
 import { _createModel } from '../utils/createobject';
+import { CanvasManager } from "../core/canvas";
 
 // import { CameraHelper } from "three";
 // import { DirectionalLightHelper } from "three";
@@ -48,6 +49,7 @@ export class Map extends EventMixin(
     private _EventMap: EventMap = {
         loaded: { listened: false }, // 加载事件参数
     };
+    private _canvasManager = new CanvasManager(); // 内部私有实例
     // @ts-ignore
     _onLoadHooks: Array<(...args) => void>;
     
@@ -291,6 +293,10 @@ export class Map extends EventMixin(
     }
     world2geo(coords: Vector3) {
         return this.tilemap.world2geo(coords);
+    }
+
+    _getCanvas(width: number = 40, height: number = 30, keySuffix?: string) {
+        return this._canvasManager.getCanvas(width,height, keySuffix);
     }
 
 }

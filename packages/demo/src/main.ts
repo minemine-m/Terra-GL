@@ -451,13 +451,15 @@ function loadgeojsonLabel(url: any, layername?: any) {
 				let featurepoint = new terra.Label({
 					geometry: feature.geometry,
 					style: {
-						type: 'canvas-label',
+						type: 'canvas-label-fixed',
 						text: feature.properties.lane_way,
 						textColor:'#E5521B',
 						showBackground:false,
 						strokeColor: '#FFFFFF',
-						strokeWidth: 10,
-						fontSize: 24,
+						strokeWidth: 3,
+						fontSize: 20,
+						fixedSize:1,
+						// screenSpaceSize:16
 					}
 					// style: {
 					// 	type: 'basic-point',

@@ -36,41 +36,42 @@ export interface IconPointStyle extends BaseStyle {
 }
 
 export interface LabelStyle extends BaseStyle {
-    type: 'canvas-label';
+    type: 'canvas-label' | 'canvas-label-fixed';
     text: string; // 文本内容
     fontSize?: number;
     fontFamily?: string;
     fontWeight?: 'normal' | 'bold' | 'bolder' | 'lighter' | number;
     fontStyle?: 'normal' | 'italic' | 'oblique';
-    
+
     // 文字样式
     textColor?: string;
     strokeColor?: string;       // 文字描边颜色
     strokeWidth?: number;       // 文字描边宽度（像素）
-    
+
     // 背景控制
     showBackground?: boolean;   // 是否显示背景
     bgStyle?: 1 | 2;           // 1: 圆角矩形, 2: 气泡样式
     bgColor?: string;
     bgOpacity?: number;        // 背景透明度 0-1
-    
+
     // 阴影效果
     shadowColor?: string;
     shadowBlur?: number;
     shadowOffsetX?: number;
     shadowOffsetY?: number;
-    
+
     // 圆角矩形配置
     roundRectRadius?: number;
-    
+
     // 气泡样式配置
     bubblePointerHeight?: number;
     bubblePointerWidth?: number;
     bubbleBorderColor?: string;
     bubbleBorderWidth?: number;
-    
+
     // 尺寸控制
     fixedSize?: number;         // 固定显示大小（世界单位）
+    screenSpaceSize?: number;  // 屏幕空间大小
 }
 
 // 定义基础多边形样式接口
@@ -284,7 +285,9 @@ export class Style {
                 case 'cloud':
                     return this._applyCloudStyle(object);
                 case 'canvas-label':
+                case 'canvas-label-fixed':
                     return this._applyTextSpriteStyle(object);
+
                 case 'custom':
                     return this._applyCustomStyle(object);
                 default:

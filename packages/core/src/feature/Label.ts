@@ -2,7 +2,8 @@
 import { Vector3, Object3D } from 'three';
 import { PointOptions, Point } from './Point';
 import { Style } from '../style';
-import {_createTextSprite } from '../utils/createobject';
+import { _createTextSprite, _createFixedSizeTextSprite } from '../utils/createobject';
+import { Map } from '../map';
 
 export type MakerOptions = PointOptions & {
 
@@ -27,7 +28,7 @@ export class Label extends Point {
             }
 
             this._threeGeometry = await this._createObject(this._style);
-            console.log(this._threeGeometry,' this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry ')
+            console.log(this._threeGeometry, ' this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry  this._threeGeometry ')
             this._updateGeometry();
 
             // 强制触发场景图更新
@@ -37,6 +38,8 @@ export class Label extends Point {
     // 根据样式类型创建对应对象
     async _createObject(style: Style): Promise<Object3D> {
         switch (style.config.type) {
+            case 'canvas-label-fixed':
+                return _createFixedSizeTextSprite(style.config, new Vector3(0, 0, 0), this.getMap() as Map);
             case 'canvas-label':
                 return _createTextSprite(style.config, new Vector3(0, 0, 0));
             default:
