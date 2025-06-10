@@ -186,7 +186,6 @@ export class Map extends EventMixin(
     /* eslint no-extend-native: 0 */
     //@internal
     _callOnLoadHooks() {
-        debugger
         const proto = Map.prototype;
         if (!proto._onLoadHooks) {
             return;

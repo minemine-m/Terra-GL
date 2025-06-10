@@ -155,7 +155,6 @@ export abstract class Layer extends EventMixin(
         return this;
     }
     _bindMap(map: Map) {
-        debugger
         if (!map) {
             return;
         }
