@@ -121,9 +121,12 @@ function main() {
 	addCloud();
 	// loadEqu();
 	// console.log(vanilla, 'vanilla-------------------');
+
+	// 等建筑加载完成后再加载标注，避免建筑遮挡标注
 	// setTimeout(() => {
-	loadgeojsonLabel('/geojson/public.gsss_fireplug.json', 'labellayer')
-	// }, 2000);
+		
+    // }, 20000);
+	loadIconLabel('/geojson/public.gsss_fireplug.json', 'labellayer')
 
 }
 
@@ -453,12 +456,66 @@ function loadgeojsonLabel(url: any, layername?: any) {
 					style: {
 						type: 'canvas-label-fixed',
 						text: feature.properties.lane_way,
-						textColor:'#E5521B',
-						showBackground:false,
+						textColor: '#E5521B',
+						showBackground: false,
 						strokeColor: '#FFFFFF',
 						strokeWidth: 3,
 						fontSize: 20,
-						fixedSize:1,
+						fixedSize: 1,
+						// screenSpaceSize:16
+					}
+					// style: {
+					// 	type: 'basic-point',
+					// 	color: '#FF0000',
+					// 	size: 10,
+
+					// }
+					// feature.setStyle({
+					// 	type: 'basic-point',
+					// 	color: '#0B31A0',
+					// 	size: 50
+					// })
+				})
+
+				featurepoint.addTo(pointLayer);
+
+			});
+			console.log(data.features.length, '长度')
+			return data;
+		})
+		.catch(err => {
+			console.error('加载geojson失败:', err);
+		});
+}
+
+
+
+function loadIconLabel(url: any, layername?: any) {
+	let pointLayer = new terra.PointLayer(layername);
+	map.addLayer(pointLayer);
+	fetch(url)
+		.then(res => res.json())
+		.then(data => {
+			data.features.forEach((feature: any) => {
+				if (feature.geometry && feature.geometry.coordinates) {
+
+					feature.geometry.coordinates = [...feature.geometry.coordinates, 1];
+				}
+				// console.log(feature, 'modified geojson data ------------');
+
+				let featurepoint = new terra.Maker({
+					geometry: feature.geometry,
+					style: {
+						type: 'icon-label-point',
+						text: feature.properties.lane_way,
+						iconUrl: '/image/point/fxd.png',
+						fontSize: 24,
+						textColor: '#FD660F',
+						strokeColor: '#000000',
+						bgColor: 'rgba(0,0,0,0.9)',
+						iconScale: 0.9,
+						renderbg: false,
+		
 						// screenSpaceSize:16
 					}
 					// style: {

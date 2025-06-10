@@ -74,6 +74,37 @@ export interface LabelStyle extends BaseStyle {
     screenSpaceSize?: number;  // 屏幕空间大小
 }
 
+
+export interface IconLabelStyle extends BaseStyle {
+    type: 'icon-label-point';
+    // 必需属性
+    text: string;
+
+    // 图标相关
+    iconUrl?: string;
+    iconSize?: number;
+    iconScale?: number;
+
+    // 文本样式
+    fontSize?: number;
+    fontFamily?: string;
+    textColor?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+    renderbg?: boolean;
+    // 背景和布局
+    bgColor?: string;
+    padding?: {
+        top?: number;
+        right?: number;
+        bottom?: number;
+        left?: number;
+    };
+
+    // 整体缩放
+    canvasScale?: number;
+}
+
 // 定义基础多边形样式接口
 export interface BasePolygonStyle extends BaseStyle {
     type: 'basic-polygon';
@@ -128,6 +159,9 @@ export interface BaseWaterStyle extends BaseStyle {
 }
 
 
+
+
+
 export type WaterStyle = BaseWaterStyle | LightWaterStyle;
 
 
@@ -154,7 +188,7 @@ export interface ModelStyle extends BaseStyle {
     };
 }
 
-export type PointStyle = BasicPointStyle | IconPointStyle;
+export type PointStyle = BasicPointStyle | IconPointStyle | IconLabelStyle;
 
 
 
@@ -246,7 +280,7 @@ export interface CustomStyle extends BaseStyle {
     build: () => Object3D | Promise<Object3D>;
 }
 
-export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle | CloudStyle | BaseWaterStyle | LabelStyle;
+export type StyleConfig = PointStyle | BaseLineStyle | PipelineStyle | ModelStyle | CustomStyle | BasePolygonStyle | ExtrudeStyle | WaterStyle | CloudStyle | BaseWaterStyle | LabelStyle | IconLabelStyle;
 export type StyleInput = StyleConfig | Style;
 
 // 2. 样式主类 ==============================================
@@ -269,6 +303,7 @@ export class Style {
             switch (this.config.type) {
                 case 'basic-point':
                 case 'icon-point':
+                case 'icon-label-point':
                     return this._applyPointStyle(object);
                 case 'basic-line':
                     return this._applyLineStyle(object as Line2);
@@ -307,9 +342,12 @@ export class Style {
 
         if (config.type === 'icon-point') {
             await this._applyIconPoint(object, config);
-        } else {
+        } else if(config.type === 'basic-point') {
             this._applyBasicPoint(object, config);
-        }
+        } else if(config.type === 'icon-label-point') {
+            // this._applyBasicPoint(object, config);
+            this._applyIconLabelPoint(object, config);
+        } 
 
         return true;
     }
@@ -388,6 +426,12 @@ export class Style {
         material.size = config.size;
         if (config.color) material.color.set(config.color);
         if (config.glow) material.sizeAttenuation = false;
+    }
+
+    // @ts-ignore
+    private _applyIconLabelPoint(object: Object3D, config: IconLabelStyle) {
+        // const config = this.config as IconLabelStyle;
+        return true
     }
 
     private _applyLineStyle(object: Object3D) {

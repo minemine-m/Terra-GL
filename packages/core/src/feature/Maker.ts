@@ -1,8 +1,9 @@
 
 import { Vector3, Object3D } from 'three';
 import { PointOptions, Point } from './Point';
-import { Style} from '../style';
-import { _createBasicPoint, _createIconPoint } from '../utils/createobject';
+import { Map } from '../map';
+import { Style } from '../style';
+import { _createBasicPoint, _createIconPoint, _createIconLabelSprite } from '../utils/createobject';
 
 export type MakerOptions = PointOptions & {
 
@@ -40,6 +41,9 @@ export class Maker extends Point {
                 return _createBasicPoint(style.config, new Vector3(0, 0, 0));
             case 'icon-point':
                 return _createIconPoint(style.config, this._position as Vector3);
+            // _createIconLabelSprite
+            case 'icon-label-point':
+                return _createIconLabelSprite(style.config, this.getMap() as Map, this._position as Vector3);
             default:
                 throw new Error(`Unsupported style type: ${style.config.type}`);
         }

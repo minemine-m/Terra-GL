@@ -322,4 +322,6 @@ export abstract class Feature extends EventMixin(
         // 清除引用
         // this._threeGeometry = null!;
     }
+
+    
 }

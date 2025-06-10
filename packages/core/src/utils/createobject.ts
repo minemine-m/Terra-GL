@@ -1,9 +1,18 @@
-import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial, CanvasTexture, MathUtils ,NearestFilter,LinearMipmapLinearFilter} from 'three';
+import { Vector2, Vector3, BufferGeometry, BufferAttribute, Points, PointsMaterial, SpriteMaterial, Sprite, Color, Group, MeshBasicMaterial, Mesh, BackSide, DoubleSide, FrontSide, ShaderMaterial, RepeatWrapping, TextureLoader, Shape, ShapeGeometry, MeshStandardMaterial, CanvasTexture, MathUtils, NearestFilter, LinearMipmapLinearFilter, Texture, NormalBlending } from 'three';
+
 import { Line2, LineMaterial, LineGeometry, Water } from 'three-stdlib';
 import { ModelLoader } from '../loaders/ModelLoader';
 import { Map } from '../map';
-import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, LabelStyle, Style } from '../style';
+import { BasicPointStyle, BaseLineStyle, IconPointStyle, ModelStyle, BasePolygonStyle, ExtrudeStyle, WaterStyle, CloudStyle, LabelStyle, IconLabelStyle, Style } from '../style';
 import { Cloud as vanillaCloud } from "@pmndrs/vanilla";
+
+
+interface CanvasResult {
+    canvas: HTMLCanvasElement;
+    width: number;
+    height: number;
+    center: [number, number];
+}
 
 // import earcut from 'earcut'; // 导入 earcut 库
 
@@ -787,6 +796,8 @@ export async function _createFixedSizeTextSprite(
 
 
 
+
+
 function roundRect(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -867,6 +878,205 @@ function drawSpeechBubble(
     );
 
     ctx.closePath();
+}
+
+/**
+ * 创建带有图标和文本的Sprite标签
+ * @param options 配置选项
+ * @returns 返回一个Three.js Sprite对象
+ */
+export async function _createIconLabelSprite(options: IconLabelStyle, map: Map, positions: Vector3): Promise<Sprite> {
+    // 设置默认值
+    const {
+        text,
+        iconUrl,
+        fontSize = 30,
+        iconSize = 60,
+        fontFamily = 'Arial',
+        padding = {},
+        bgColor = 'rgba(0,0,0,0.0)',
+        textColor = 'rgb(255,255,255)',
+        strokeColor = 'rgb(0,0,0)',
+        strokeWidth = fontSize / 9,
+        iconScale = 0.8,
+        canvasScale = 1,
+        renderbg = true
+    } = options;
+
+    // 合并padding默认值
+    const mergedPadding = {
+        top: 0,
+        right: 1,
+        bottom: 0,
+        left: 0,
+        ...padding,
+    };
+
+    // 加载图标（如果有）
+    let iconImage: HTMLImageElement | null = null;
+    if (iconUrl) {
+        iconImage = await loadImage(iconUrl);
+    }
+
+    // 创建Canvas
+    const { canvas, width, height, center } = await createLabelCanvas({
+        text,
+        iconImage,
+        fontSize,
+        iconSize,
+        fontFamily,
+        padding: mergedPadding,
+        bgColor,
+        textColor,
+        strokeColor,
+        strokeWidth,
+        iconScale,
+        canvasScale,
+        renderbg,
+    }, map);
+
+    // 创建Three.js纹理和Sprite
+    const texture = new Texture(canvas);
+    texture.needsUpdate = true;
+
+    const spriteMaterial = new SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: true, // 禁用深度测试
+        depthWrite: true, //禁止写入深度缓冲区
+        blending:NormalBlending, // 使用标准混合模式
+    });
+
+    const sprite = new Sprite(spriteMaterial);
+    sprite.scale.set(width, height, 1);
+    sprite.center.set(center[0], center[1]);
+    if (positions) {
+        sprite.position.copy(positions);
+    }
+
+    sprite.renderOrder = 999;
+    return sprite;
+}
+
+/**
+ * 辅助函数：创建Canvas标签
+ */
+async function createLabelCanvas(
+    options: {
+        text: string;
+        iconImage: HTMLImageElement | null;
+        fontSize: number;
+        iconSize: number;
+        fontFamily: string;
+        padding: {
+            top: number;
+            right: number;
+            bottom: number;
+            left: number;
+        };
+        renderbg: boolean;
+        bgColor: string;
+        textColor: string;
+        strokeColor: string;
+        strokeWidth: number;
+        iconScale: number;
+        canvasScale: number;
+    },
+    map: Map
+): Promise<CanvasResult> {
+    return new Promise((resolve) => {
+        const {
+            text,
+            iconImage,
+            fontSize,
+            iconSize,
+            fontFamily,
+            padding,
+            bgColor,
+            textColor,
+            strokeColor,
+            strokeWidth,
+            iconScale,
+            canvasScale,
+            renderbg
+        } = options;
+
+        // 计算Canvas尺寸
+        const textWidth = text.length * fontSize;
+        const canvasWidth = padding.left + iconSize + textWidth + padding.right;
+        const canvasHeight =
+            Math.max(iconSize, fontSize) + padding.top + padding.bottom;
+
+        // 创建Canvas
+
+        const canvas = map._getCanvas(canvasWidth, canvasHeight, text);
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Could not get canvas context');
+        debugger
+        // 绘制背景
+        if (renderbg) {
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+
+
+        // 绘制图标
+        if (iconImage) {
+            const iconX = padding.left + (iconSize * (1 - iconScale)) * 0.5;
+            const iconY = padding.top + (iconSize * (1 - iconScale)) * 0.5;
+            const iconWidth = iconSize * iconScale;
+            const iconHeight = iconSize * iconScale;
+
+            ctx.drawImage(iconImage, iconX, iconY, iconWidth, iconHeight);
+        }
+
+        // 设置文本样式
+        ctx.font = `500 ${fontSize}px ${fontFamily}`;
+        ctx.textBaseline = 'middle';
+        ctx.imageSmoothingEnabled = false;
+
+        // 文本位置
+        const textX = padding.left + (iconImage ? iconSize + 2 : 0);
+        const textY = canvasHeight / 2;
+
+        // 绘制文本描边
+        if (strokeWidth > 0) {
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeStyle = strokeColor;
+            ctx.strokeText(text, textX, textY);
+        }
+
+
+        // 绘制文本
+        ctx.fillStyle = textColor;
+        ctx.fillText(text, textX, textY);
+
+        resolve({
+            canvas,
+            width: canvasWidth / canvasScale,
+            height: canvasHeight / canvasScale,
+            center: [
+                iconSize * 0.5 / canvasWidth,
+                (1 - iconScale) * 0.5,
+            ],
+        });
+    });
+}
+
+/**
+ * 辅助函数：加载图片
+ */
+function loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(new Error(`Failed to load image: ${url} ${e}`));
+        img.src = url;
+    });
 }
 
 
