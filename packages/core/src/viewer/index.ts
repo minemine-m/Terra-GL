@@ -66,6 +66,7 @@ export type ViewerOptions = {
 		hdrExposure?: number;
 		hdrEncoding?: number;
 	};
+	debug?: boolean
 	// cloudsparams?: {
 	// 	enabled: boolean;
 	// 	texture: string;
@@ -85,6 +86,7 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 	public clouds: Clouds | null = null;
 	public container?: HTMLElement;
 	private readonly _clock: Clock = new Clock();
+	// @ts-ignore
 	private stats: Stats;
 	//添加回调集合
 	private _animationCallbacks: Set<(delta: number, elapsedtime: number) => void> = new Set();
@@ -144,9 +146,11 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		// }
 
 		this.renderer.setAnimationLoop(this.animate.bind(this));
+		if (options.debug) {
+			this.stats = new Stats();
+			document.body.appendChild(this.stats.dom);
+		}
 
-		this.stats = new Stats();
-		document.body.appendChild(this.stats.dom);
 	}
 
 	/**
@@ -457,7 +461,10 @@ export class Viewer extends EventDispatcher<ViewerEventMap> {
 		this.controls.update();
 		this.renderer.render(this.scene, this.camera);
 		teweenUpdate();
-		this.stats.update();
+		if (this.stats) {
+			this.stats.update();
+		}
+		
 		// if (this.clouds) {
 		// 	this.clouds.update(this.camera, this._clock.getElapsedTime(), delta);
 		// }

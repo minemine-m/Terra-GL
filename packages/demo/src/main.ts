@@ -4,6 +4,7 @@ import * as terra from "terra-gl";
 // import * as THREE from "three";
 
 import { PrecomputedTexturesLoader } from '@takram/three-atmosphere'
+import { debug } from "console";
 
 const authkey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoienpzdyIsImFpZCI6IjY3ZjMzNDg5NDIxYWE5MGU2MDE1ZTNiOCIsImNpZCI6IjVlOGZmMDg4MzRmNmFjMGQxNGUzMzBhMSIsImNvbXBhbnkiOnsiaWQiOiI2N2YzMzZjMDQyMWFhOTBlNjA0NGQ2NjQiLCJuYW1lIjoi6YOR5bee5biC5rC05Yqh5YWs5Y-4IiwiY29kZSI6bnVsbH0sImV4cCI6MTc3OTI2MzMwNCwiZ3JvdXAiOiI2N2YzMzZjMDQyMWFhOTBlNjA0NGQ2NjQiLCJpYXQiOjE3NDc3MjczMDQsImlwIjoiMTAuODAuMC4xMDIiLCJqd3RJZCI6IjY4MmMzM2M4NDIxYWE5MGU2MDQ1NTIyYiIsIm1vYmlsZSI6IiIsIm5hbWUiOiLpg5Hlt57msLTliqHnrqHnkIblkZgiLCJyb2xlcyI6WyI2N2YzM2I3MTQyMWFhOTBlNjAxNWU2YzEiXSwic24iOiIwMSIsInRva2VuZnJvbSI6InVuaXdhdGVyIiwidWlkIjoiNjdmMzNhYTU0MjFhYTkwZTYwNDRkN2EwIn0.gj3lBni0MLG7IE_QhqTcoEXtx3Qtfiqfo050cKznTVQ";
 
@@ -64,6 +65,7 @@ function main() {
 		// (86.95, 27.98
 		center: [113.55175280557246, 34.793170730802366, 1000],
 		viewer: {
+			debug:false,
 			antialias: true,
 			// 图片顺序对着的夜空1（有山） -------
 			skybox: {
@@ -75,11 +77,6 @@ function main() {
 				hdrExposure: 1,
 				defaultColor: '#010206'
 			},
-
-			cloudsparams: {
-				enabled: true,
-				texture: './image/cloud.png'
-			}
 		},
 		//
 		meshmap: {
